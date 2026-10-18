@@ -1,0 +1,15 @@
+{
+  "name": "AI Compute Monitor",
+  "short_name": "AI Compute",
+  "description": "Reading the AI chip cycle: daily price signals on AI compute supply and demand.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0e11",
+  "theme_color": "#0d1117",
+  "icons": [
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-1024.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" },
+    { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}
