@@ -309,7 +309,75 @@ def signals(out, ocpi, tok_open, big4):
     scen = {"tokens": td, "rent": rd_, "token_chg": tok3, "rent_chg": rent3,
             "current": cur["key"] if cur else None, "all": SCENARIOS,
             "rule": f"3-month change in open-model AI price vs average H100/H200/B200 rent; moves under {pct(MOVE)} count as flat."}
+    scen["tripwires"] = tripwires(sig, n3, h3, gap, growth, r, t5, yoy, load, dcp)
+    scen["verdict"] = verdict(cur, scen["tripwires"])
     return sig, scen
+
+
+# ---- tripwires ---------------------------------------------------------------------------------
+# One row per turn the market could take. progress runs from 0 (as far from the trigger as the
+# scale goes) to 1 (trigger hit); "kind" says what tripping means:
+#   turn       = the chip cycle turning down   pressure = a squeeze already biting
+#   constraint = power limiting the build-out (benefits power names)
+def tripwires(sig, n3, h3, gap, growth, r, t5, yoy, load, dcp):
+    def prog(v, far, trig):
+        if v is None:
+            return None
+        return max(0.0, min(1.25, (far - v) / (far - trig)))
+
+    st = {x["id"]: x["status"] for x in sig}
+    max_load = max(load.values()) if load else None
+    pw = None if max_load is None or dcp is None else min(max(0, max_load) / 0.03, max(0, dcp) / 0.05)
+    rows = [
+        {"id": "old_rent", "kind": "turn", "name": "H100 rent drops 10% in 3 months", "now": pct(h3), "trigger": "−10%",
+         "progress": prog(h3, 0.30, -0.10), "hit": ["gpu_landlords"]},
+        {"id": "new_rent", "kind": "turn", "name": "H200/B200 rents drop over 3 months", "now": pct(n3), "trigger": "−5%",
+         "progress": prog(n3, 0.50, -MOVE), "hit": ["gpu_landlords", "chipmakers"]},
+        {"id": "capex", "kind": "turn", "name": "Big Tech capex shrinks", "now": pct(yoy[-1][1]) if yoy else "n/a",
+         "trigger": "below a year ago", "progress": prog(yoy[-1][1] if yoy else None, 1.0, 0.0), "hit": ["chipmakers"]},
+        {"id": "term", "kind": "turn", "name": "Shortage premium gone", "now": f"{r:.2f}×" if r else "n/a",
+         "trigger": "spot ≤ 1.1× contract", "progress": prog(r, 2.0, 1.1) if len(t5) >= 2 else None,
+         "hit": ["gpu_landlords"], "note": "needs more contract data" if len(t5) < 2 else None},
+        {"id": "squeeze", "kind": "pressure", "name": "AI price outruns rent by 30 pts", "now": f"{gap * 100:.0f} pts" if gap is not None else "n/a",
+         "trigger": "30 pts", "progress": prog(gap, 0.0, 0.30), "hit": ["token_renters"]},
+        {"id": "breakeven", "kind": "pressure", "name": "Break-even work up 50%", "now": pct(growth) if growth is not None else "n/a",
+         "trigger": "+50%", "progress": prog(growth, 0.0, 0.50), "hit": ["token_renters", "ai_output_owners"]},
+        {"id": "power", "kind": "constraint", "name": "Power becomes the limit", "now": f"load {pct(max_load, 1)}, price {pct(dcp, 1)}",
+         "trigger": "load >3% and price >5%", "progress": None if pw is None else min(1.25, pw), "hit": ["power"]},
+    ]
+    vals = {"old_rent": (h3, -0.10), "new_rent": (n3, -MOVE), "capex": (yoy[-1][1] if yoy else None, 0.0),
+            "squeeze": (gap, 0.30), "breakeven": (growth, 0.50)}
+    for x in rows:
+        x["tripped"] = x["progress"] is not None and x["progress"] >= 1
+        v, t = vals.get(x["id"], (None, None))
+        x["distance"] = None if v is None else f"{abs(v - t) * 100:.0f} pts {'past' if x['tripped'] else 'to go'}"
+        if x["id"] == "term" and r:
+            x["distance"] = f"{r - 1.1:.2f}× to go"
+        x["status"] = st.get(x["id"])
+    order = {"turn": 0, "pressure": 1, "constraint": 2}
+    rows.sort(key=lambda x: (x["progress"] is None, order[x["kind"]], -(x["progress"] or 0)))
+    return rows
+
+
+def verdict(cur, tw):
+    turns = [x for x in tw if x["kind"] == "turn" and x["progress"] is not None]
+    tripped_turns = [x for x in turns if x["tripped"]]
+    pressure = [x for x in tw if x["kind"] == "pressure" and x["tripped"]]
+    power = next((x for x in tw if x["kind"] == "constraint"), None)
+    nearest = max((x for x in turns if not x["tripped"]), key=lambda x: x["progress"], default=None)
+    head = ("The cycle is turning." if tripped_turns else
+            "Shortage intact." if cur and cur["key"] == "boom" else
+            f"{cur['name']}." if cur else "No clean read.")
+    parts = [head]
+    if pressure:
+        parts.append("Sellers of AI output are being squeezed.")
+    if power and power["tripped"]:
+        parts.append("Power is the binding limit.")
+    if nearest:
+        parts.append(f"Nearest turn: {nearest['name']} (now {nearest['now']}, trigger {nearest['trigger']}, {nearest['distance']}).")
+    return {"text": " ".join(parts), "nearest": nearest["id"] if nearest else None,
+            "tripped_turns": len(tripped_turns), "turns": len(turns), "pressure": len(pressure),
+            "power_binding": bool(power and power["tripped"])}
 
 
 def build():
@@ -534,6 +602,19 @@ def build():
                     "hbm": [{**g, "date": str(g.get("date"))} for g in manual.get("hbm_supply") or []]}
 
     out["signals"], out["scenario"] = signals(out, ocpi, tok_open, big4)
+
+    # daily log of each signal's status and tripwire progress, for "what changed" over time
+    from common import merge_csv
+    d0 = dt.date.today().isoformat()
+    prog = {t["id"]: t["progress"] for t in out["scenario"]["tripwires"]}
+    merge_csv("signals_history.csv",
+              [{"date": d0, "id": x["id"], "status": x["status"],
+                "progress": "" if prog.get(x["id"]) is None else round(prog[x["id"]], 4)} for x in out["signals"]],
+              ["date", "id"], ["date", "id", "status", "progress"])
+    hist = defaultdict(list)
+    for r_ in rd("signals_history.csv"):
+        hist[r_["id"]].append([r_["date"], r_["status"], num(r_["progress"])])
+    out["signal_history"] = {k: sorted(v) for k, v in hist.items()}
 
     # named companies; token sellers are topped up with today's OpenRouter providers
     comp = load_yaml("companies.yml")

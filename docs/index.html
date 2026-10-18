@@ -46,6 +46,36 @@
   .eyebrow { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
   .pos { color: var(--good); } .neg { color: var(--bad); }
 
+
+  /* verdict + tripwires */
+  .verdict { font-size: 19px; font-weight: 600; line-height: 1.4; letter-spacing: -0.01em; margin: 6px 0 4px; max-width: 980px; }
+  .verdict em { font-style: normal; padding: 0 4px; border-radius: 4px; }
+  .verdict .v-ok { background: var(--steady-dim); } .verdict .v-sq { background: var(--turn-dim); } .verdict .v-pw { background: rgba(34,197,94,0.18); } .verdict .v-nx { background: var(--watch-dim); }
+  .changed { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
+  .trip { margin-top: 14px; }
+  .trip-group { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin: 12px 0 6px; }
+  .trip-group:first-child { margin-top: 0; }
+  .tw { display: grid; grid-template-columns: minmax(150px, 1.25fr) minmax(160px, 2fr) minmax(90px, 0.8fr) minmax(120px, 1.4fr); gap: 14px; align-items: center; padding: 8px 0; border-top: 1px solid var(--border); }
+  .tw-name { font-size: 13px; font-weight: 600; line-height: 1.25; }
+  .tw-now { font-size: 11px; color: var(--text-muted); font-family: var(--mono); }
+  .tw-track { position: relative; height: 12px; background: rgba(139,149,165,0.10); border-radius: 6px; }
+  .tw-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; }
+  .tw-line { position: absolute; top: -5px; bottom: -5px; width: 2px; background: var(--bad); border-radius: 1px; }
+  .tw-line.pw { background: #22c55e; }
+  .tw-dist { font-family: var(--mono); font-size: 12.5px; font-weight: 600; text-align: right; white-space: nowrap; }
+  .tw-hit { font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
+  .tw-hit .t { font-family: var(--mono); color: var(--watch); }
+  .tw-hit .lab { color: var(--text-muted); }
+  .trip-key { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--text-muted); margin-top: 10px; }
+  .trip-key i { display: inline-block; width: 14px; height: 8px; border-radius: 3px; margin-right: 5px; vertical-align: 0; }
+  .panel-sub { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; }
+  @media (max-width: 760px) {
+    .tw { grid-template-columns: 1fr auto; gap: 6px 10px; }
+    .tw-track { grid-column: 1 / -1; order: 3; }
+    .tw-hit { grid-column: 1 / -1; order: 4; }
+    .verdict { font-size: 16.5px; }
+  }
+
   /* hero */
   .hero { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 16px; }
   .state-name { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin: 4px 0 6px; line-height: 1.15; }
@@ -151,7 +181,16 @@
 
 <main class="main">
   <h1>Reading the AI chip cycle</h1>
-  <p class="sub">Supply vs demand for AI compute, read from prices each day.</p>
+  <p class="verdict" id="verdict"></p>
+  <p class="changed" id="changed"></p>
+
+  <section class="card">
+    <div class="eyebrow">Tripwires · how close each turn is, and who it hits</div>
+    <div class="trip" id="trip"></div>
+    <div class="trip-key"><span><i style="background:var(--s1)"></i>distance covered toward the trigger</span><span><i style="background:var(--bad);width:3px"></i>trigger</span><span><i style="background:var(--turn)"></i>tripped</span></div>
+  </section>
+
+  <h2>Where the market sits</h2>
 
   <section class="hero">
     <div class="card" id="state"></div>
@@ -168,58 +207,59 @@
     <div class="cap">Shaded = revenue a chip-hour has lost against what it costs to rent.</div>
   </section>
 
-  <h2 id="signals">Seven signals <span class="legend-pills" id="tally"></span></h2>
-  <div class="tiles" id="tiles"></div>
-
   <h2 id="who">Who's squeezed <small>names are exposure, not recommendations · hover a name for why</small></h2>
   <div class="stack" id="stack"></div>
+
+  <h2 id="signals">Signal detail <span class="legend-pills" id="tally"></span></h2>
+  <div class="tiles" id="tiles"></div>
+
 
   <h2 id="charts">Charts</h2>
   <div class="grid">
     <section class="card panel" id="p-rent">
-      <div class="panel-title">Chip rent, $/hour</div>
+      <div class="panel-title" id="tt-rent"></div><div class="panel-sub">Chip rent, $ per hour (Ornn index)</div>
       <div class="chart"><canvas id="c-ocpi"></canvas></div>
       <table id="t-rent"></table>
     </section>
     <section class="card panel" id="p-tokens">
-      <div class="panel-title">AI output price, $ per million tokens</div>
+      <div class="panel-title" id="tt-tokens"></div><div class="panel-sub">AI output price, $ per million tokens</div>
       <div class="chart"><canvas id="c-otpi"></canvas></div>
       <div class="cap">Frontier = OpenAI, Anthropic, Google. Open = models any provider can serve.</div>
     </section>
     <section class="card panel" id="p-capex">
-      <div class="panel-title">Big Tech capex growth vs a year earlier</div>
+      <div class="panel-title" id="tt-capexg"></div><div class="panel-sub">Microsoft + Alphabet + Amazon + Meta capex vs a year earlier</div>
       <div class="chart"><canvas id="c-capex-yoy"></canvas></div>
       <div class="cap">Amber = slower than the quarter before. Red = below a year earlier. 2022: amber, amber, then red.</div>
     </section>
     <section class="card panel" id="p-capex-co">
-      <div class="panel-title">Capex by company, $B per quarter</div>
+      <div class="panel-title" id="tt-capexco"></div><div class="panel-sub">Capex by company, $B per quarter</div>
       <div class="chart"><canvas id="c-capex"></canvas></div>
     </section>
     <section class="card panel" id="p-breakeven">
-      <div class="panel-title">Tokens an H100 must sell per hour to cover rent</div>
+      <div class="panel-title" id="tt-req"></div><div class="panel-sub">Tokens an H100 must sell per hour to cover its rent</div>
       <div class="chart"><canvas id="c-req"></canvas></div>
     </section>
     <section class="card panel" id="p-old">
-      <div class="panel-title">H100 vs B200 cost per unit of work</div>
+      <div class="panel-title" id="tt-ret"></div><div class="panel-sub">H100 vs B200 cost per unit of work</div>
       <div class="chart"><canvas id="c-ret"></canvas></div>
       <div class="cap">Above 1.00 = retire H100s. Uses a placeholder 2.5× B200 factor.</div>
     </section>
     <section class="card panel" id="p-grid">
-      <div class="panel-title">Grid load growth, 12 months</div>
+      <div class="panel-title" id="tt-load"></div><div class="panel-sub">Grid load, last 12 months vs the 12 before</div>
       <div class="chart short"><canvas id="c-load"></canvas></div>
       <div class="cap">Dashed = 3% tightening line.</div>
     </section>
     <section class="card panel">
-      <div class="panel-title">Industrial power price growth, 12 months</div>
+      <div class="panel-title" id="tt-px"></div><div class="panel-sub">Industrial power price, 12-month average vs the year before</div>
       <div class="chart short"><canvas id="c-px"></canvas></div>
     </section>
     <section class="card panel" id="p-power">
-      <div class="panel-title">AI data center power, GW</div>
+      <div class="panel-title" id="tt-dc"></div><div class="panel-sub">Power at tracked AI data centers, GW</div>
       <div class="chart short"><canvas id="c-dc"></canvas></div>
       <div class="cap">Dashed = announced timelines.</div>
     </section>
     <section class="card panel" id="p-history">
-      <div class="panel-title">Long view: cost at a fixed quality</div>
+      <div class="panel-title" id="tt-epoch"></div><div class="panel-sub">Cheapest model at a fixed benchmark score, $ per million tokens</div>
       <div id="epoch-ctl"></div>
       <div class="chart short"><canvas id="c-epoch"></canvas></div>
     </section>
@@ -343,6 +383,46 @@ function render(D) {
   const stale = D.status.filter(s => s.stale);
   $('status-line').innerHTML = `updated ${D.generated_at.slice(0,10)}` + (stale.length ? ` · <span class="stale">stale: ${stale.map(s => esc(s.label)).join(', ')}</span>` : '');
 
+  // ---- verdict
+  const tw = D.scenario.tripwires, V = D.scenario.verdict, curS = D.scenario.all.find(x => x.key === D.scenario.current);
+  const near = tw.find(t => t.id === V.nearest);
+  const vparts = [];
+  vparts.push(V.tripped_turns ? '<em class="v-sq">The cycle is turning.</em>' : curS && curS.key === 'boom' ? '<em class="v-ok">Shortage intact.</em>' : `<em class="v-nx">${esc(curS ? curS.name : 'No clean read')}.</em>`);
+  if (V.pressure) vparts.push('<em class="v-sq">Sellers of AI output are being squeezed.</em>');
+  if (V.power_binding) vparts.push('<em class="v-pw">Power is the binding limit.</em>');
+  if (near) vparts.push(`Nearest turn: <em class="v-nx">${esc(near.name)}</em>, now ${esc(near.now)} against a ${esc(near.trigger)} trigger (${esc(near.distance)}).`);
+  $('verdict').innerHTML = vparts.join(' ');
+
+  // ---- what changed (from the daily signal log)
+  const H = D.signal_history || {}, dates = [...new Set(Object.values(H).flat().map(r => r[0]))].sort();
+  if (dates.length < 2) $('changed').textContent = `First reading ${dates[0] || ''}. Changes since the prior week appear here as the daily log builds.`;
+  else {
+    const lastD = dates[dates.length - 1], target = new Date(new Date(lastD) - 7 * 864e5).toISOString().slice(0, 10);
+    const prevD = [...dates].reverse().find(d => d <= target) || dates[0];
+    const ch = D.signals.map(sg => { const h = H[sg.id] || [], a = h.find(r => r[0] === prevD), b = h.find(r => r[0] === lastD); return a && b && a[1] !== b[1] ? `${sg.short.replace('?', '')}: ${STATUS[a[1]]} → ${STATUS[b[1]]}` : null; }).filter(Boolean);
+    $('changed').textContent = `Since ${prevD}: ` + (ch.length ? ch.join(' · ') : 'no signal changed status.');
+  }
+
+  // ---- tripwires
+  const tick = keys => { const cs = keys.flatMap(k => companies(k, D)), pub = cs.filter(c => c.ticker), prv = cs.filter(c => !c.ticker);
+    const seen = new Set(), t = pub.filter(c => !seen.has(c.ticker) && seen.add(c.ticker)).map(c => c.ticker);
+    const shown = t.slice(0, 6).map(x => `<span class="t">${esc(x)}</span>`).join(' ');
+    const more = (t.length > 6 ? ` +${t.length - 6}` : '') + (prv.length ? `${t.length ? ' · ' : ''}${prv.slice(0, t.length ? 1 : 3).map(c => esc(c.name)).join(', ')}${prv.length > (t.length ? 1 : 3) ? ` +${prv.length - (t.length ? 1 : 3)} private` : ' (private)'}` : '');
+    return shown + more; };
+  const row = t => {
+    const p = t.progress, w = p == null ? 0 : Math.min(p, 1.25) / 1.25 * 100;
+    const col = t.kind === 'constraint' ? '#22c55e' : t.tripped ? css('--turn') : p > 0.6 ? css('--watch') : css('--s1');
+    return `<div class="tw">
+      <div><div class="tw-name">${esc(t.name)}</div><div class="tw-now">now ${esc(t.now)} · trigger ${esc(t.trigger)}</div></div>
+      <div class="tw-track" title="${p == null ? 'not enough data' : (p * 100).toFixed(0) + '% of the way from the far end of the scale to the trigger'}">${p == null ? '' : `<span class="tw-fill" style="width:${w}%;background:${col}"></span>`}<i class="tw-line ${t.kind === 'constraint' ? 'pw' : ''}" style="left:80%"></i></div>
+      <div class="tw-dist" style="color:${t.tripped ? (t.kind === 'constraint' ? 'var(--good)' : 'var(--bad)') : 'var(--text)'}">${esc(t.distance || (t.tripped ? 'tripped' : t.note || '—'))}</div>
+      <div class="tw-hit"><span class="lab">${t.kind === 'constraint' ? 'Benefits' : t.tripped ? 'Hitting' : 'Hits'}:</span> ${tick(t.hit)}</div>
+    </div>`; };
+  const g1 = tw.filter(t => t.kind === 'turn' && !t.tripped && t.progress != null), g2 = tw.filter(t => t.tripped), g3 = tw.filter(t => t.progress == null);
+  $('trip').innerHTML = (g1.length ? `<div class="trip-group">Cycle turns · not yet tripped, nearest first</div>${g1.map(row).join('')}` : '') +
+    (g2.length ? `<div class="trip-group">Already tripped</div>${g2.map(row).join('')}` : '') +
+    (g3.length ? `<div class="trip-group">Waiting on data</div>${g3.map(row).join('')}` : '');
+
   // ---- state card
   const sc = D.scenario, cur = sc.all.find(s => s.key === sc.current);
   $('state').innerHTML = `
@@ -448,6 +528,32 @@ function render(D) {
   $('epoch-ctl').innerHTML = `<select aria-label="Benchmark">${keys.map(k => `<option value="${esc(k)}"${k === k0 ? ' selected' : ''}>${esc(k.replace('LMSys Chatbot Arena ELO','Arena Elo').replace(' ≥ ', ' at '))}</option>`).join('')}</select>`;
   $('epoch-ctl').querySelector('select').onchange = e => drawEpoch(e.target.value);
   if (keys.length) drawEpoch(k0);
+
+  // ---- takeaway titles: each chart title states what the chart shows today
+  const T = (id, txt) => { const e = $(id); if (e) e.textContent = txt; };
+  const c3 = g => D.gpu.chg[g] && D.gpu.chg[g].d90;
+  T('tt-rent', `New chips ${fmtPct(c3('H200'))} (H200) and ${fmtPct(c3('B200'))} (B200) in 3 months; H100 ${fmtPct(c3('H100 SXM'))}`);
+  const chg = (s_, d) => { if (!s_ || s_.length < 2) return null; const cut = new Date(new Date(last(s_)[0]) - d * 864e5).toISOString().slice(0, 10); const b_ = s_.filter(p => p[0] <= cut); return b_.length ? last(s_)[1] / last(b_)[1] - 1 : null; };
+  T('tt-tokens', `AI output ${fmtPct(chg(oc.open, 85))} (open models) and ${fmtPct(chg(oc.closed, 85))} (frontier) in 3 months`);
+  const ly = last(yoy), py = yoy[yoy.length - 2];
+  T('tt-capexg', ly ? `Capex ${fmtPct(ly[1])} on a year ago, ${ly[1] >= py[1] ? 'still accelerating' : 'growth slowing'} (${fmtPct(py[1])} the quarter before)` : 'Capex growth');
+  const b4 = last(D.capex.big4_total);
+  T('tt-capexco', b4 ? `Big 4 spent $${b4[1].toFixed(0)}B last quarter, a $${(b4[1] * 4).toFixed(0)}B annual pace` : 'Capex by company');
+  const rq = ri.tokens_per_gpu_hour;
+  T('tt-req', rq.length ? `An H100 must sell ${(last(rq)[1] / 1e6).toFixed(0)}M tokens an hour to cover rent, ${fmtPct(last(rq)[1] / rq[0][1] - 1)} since ${rq[0][0].slice(5).replace('-', '/')}` : '');
+  const rl = D.retirement.latest;
+  T('tt-ret', rl == null ? '' : rl < 1 ? `H100 is still ${((1 - rl) * 100).toFixed(0)}% cheaper per unit of work than B200: no price reason to retire it` : `H100 now costs ${((rl - 1) * 100).toFixed(0)}% more per unit of work than B200: retirement pressure`);
+  const lp = last(ld.PJM || []), le = last(ld.ERCOT || []);
+  T('tt-load', lp && le ? `Grid load ${fmtPct(lp[1], 1)} in PJM and ${fmtPct(le[1], 1)} in ERCOT, ${Math.max(lp[1], le[1]) > 0.03 ? 'above' : 'below'} the 3% line` : '');
+  const pwr = D.signals.find(x => x.id === 'power'), pg = pwr && pwr.gauges.find(g => g.label.startsWith('Power price'));
+  const ohio = last(p12.OH || []);
+  T('tt-px', pg ? `Power prices in data-center states up a median ${(pg.value * 100).toFixed(1)}%${ohio ? `; Ohio ${fmtPct(ohio[1])}` : ''}` : '');
+  const dNow = last(hist), dEnd = last(dc);
+  T('tt-dc', dNow ? `${(dNow[1] / 1000).toFixed(0)} GW running at tracked AI sites; ${(dEnd[1] / 1000).toFixed(0)} GW announced by ${dEnd[0].slice(0, 4)}` : '');
+  const epochTitle = k => { const sr = eb[k]; if (!sr || sr.length < 2) return; const a_ = sr[0], z = last(sr), yrs = (new Date(z[0]) - new Date(a_[0])) / (365.25 * 864e5);
+    const f = Math.pow(a_[1] / z[1], 1 / Math.max(yrs, 0.1)); T('tt-epoch', `At this quality level, AI got ~${f >= 10 ? f.toFixed(0) : f.toFixed(1)}× cheaper per year (${a_[0].slice(0, 4)}–${z[0].slice(0, 4)})`); };
+  epochTitle(k0);
+  $('epoch-ctl').querySelector('select').addEventListener('change', e => epochTitle(e.target.value));
 
   // ---- fine print
   $('method').innerHTML = `<p>${esc(sc.rule)}</p>` + D.signals.map((s, i) => `<p><b>${i+1}. ${esc(s.title)}</b> ${esc(s.rule)}</p>`).join('');
