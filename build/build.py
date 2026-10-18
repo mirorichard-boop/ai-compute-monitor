@@ -261,6 +261,34 @@ def signals(out, ocpi, tok_open, big4):
         "extra": f"Data-center states: {', '.join(DC_STATES)}. EIA price data runs about three months behind.",
     })
 
+    # compact labels and gauges for the tile view. A gauge is a bar from lo to hi split into
+    # status zones; each zone runs up to `to`. The marker is the current value.
+    INF = float("inf")
+
+    def gauge(label, v, lo, hi, zones, fmt="pct"):
+        return {"label": label, "value": v, "lo": lo, "hi": hi, "fmt": fmt,
+                "zones": [{"to": None if z == INF else z, "status": st} for z, st in zones]}  # None = open-ended
+
+    COMPACT = {
+        "new_rent": ("Newest chips still scarce?", "Turns below −5%",
+                     [gauge("H200/B200 rent, 3 mo", n3, -0.3, 0.5, [(-MOVE, "turn"), (MOVE, "watch"), (INF, "steady")])]),
+        "old_rent": ("Older chips losing value?", "Turns below −10%",
+                     [gauge("H100 rent, 3 mo", h3, -0.3, 0.3, [(-0.10, "turn"), (MOVE, "watch"), (INF, "steady")])]),
+        "squeeze": ("AI cheapening faster than chips?", "Turns when rents fall too",
+                    [gauge("Gap, rent minus AI price", gap, 0, 1.0, [(0.30, "steady"), (INF, "watch")], "pts")]),
+        "breakeven": ("Work each chip must do to pay rent", "Watch above +50%",
+                      [gauge("Break-even tokens, change", growth, 0, 2.0, [(0.5, "steady"), (INF, "watch")])]),
+        "term": ("Market expects cheaper chips?", "Turns below 1.1×",
+                 [gauge("Spot ÷ 5-yr contract", r, 0.8, 2.0, [(1.1, "turn"), (1.3, "watch"), (INF, "steady")], "x")]),
+        "capex": ("Big Tech still accelerating?", "Watch: 2 of 3 quarters slower", []),
+        "power": ("Power the bottleneck?", "Binding: load >3% and price >5%",
+                  [gauge(f"{k} load, 12 mo", load.get(k), -0.02, 0.08, [(0.03, "steady"), (INF, "watch")])
+                   for k in ("PJM", "ERCOT") if k in load]
+                  + [gauge("Power price, DC states", dcp, -0.05, 0.15, [(0.05, "steady"), (INF, "watch")])]),
+    }
+    for x in sig:
+        x["short"], x["rule_short"], x["gauges"] = COMPACT[x["id"]]
+
     # who is exposed to each signal; "now" when the signal is already flashing, else "if it turns"
     EXPOSURE = {
         "new_rent": (["gpu_landlords", "chipmakers"], "Hit first if this turns"),

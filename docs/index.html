@@ -8,7 +8,7 @@
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="apple-touch-icon" href="icon.svg">
 <meta name="description" content="Reading the AI chip cycle: seven price-based signals on AI chip supply and demand, updated daily, each with a stated rule.">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <style>
@@ -16,292 +16,227 @@
     color-scheme: dark;
     --bg: #0b0e11; --bg-card: #12161c; --bg-raised: #171c24; --bg-header: #0d1117; --border: #1e2530; --border-light: #2a3341;
     --text: #e2e8f0; --text-secondary: #9aa4b4; --text-muted: #626d80;
-    --steady: #3987e5; --steady-dim: rgba(57,135,229,0.14);
-    --watch: #eab308; --watch-dim: rgba(234,179,8,0.14);
-    --turn: #ef4444; --turn-dim: rgba(239,68,68,0.14);
-    --pending: #626d80; --pending-dim: rgba(98,109,128,0.16);
-    /* categorical series, dark steps, fixed order */
+    --steady: #3987e5; --steady-dim: rgba(57,135,229,0.18);
+    --watch: #eab308; --watch-dim: rgba(234,179,8,0.20);
+    --turn: #ef4444; --turn-dim: rgba(239,68,68,0.22);
+    --good: #4ade80; --bad: #f87171;
+    --pending-dim: rgba(98,109,128,0.18);
     --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #9085e9;
     --grid: rgba(139,149,165,0.10);
     --radius: 8px; --radius-lg: 12px;
     --font: 'DM Sans', -apple-system, sans-serif; --mono: 'JetBrains Mono', ui-monospace, monospace;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
-  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; overflow-x: hidden; line-height: 1.5; }
-  a { color: var(--text); }
-  .header { background: var(--bg-header); border-bottom: 1px solid var(--border); padding: 12px 24px; padding-top: max(12px, env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; gap: 12px; position: sticky; top: 0; z-index: 100; }
-  .logo { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
-  .logo-icon { width: 26px; height: 26px; background: linear-gradient(135deg, var(--s6), var(--s1)); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; overflow-x: hidden; line-height: 1.45; }
+  .header { background: var(--bg-header); border-bottom: 1px solid var(--border); padding: 10px 24px; padding-top: max(10px, env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; gap: 12px; position: sticky; top: 0; z-index: 100; }
+  .logo { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
   .nav { display: flex; gap: 16px; font-size: 12px; }
-  .nav a { color: var(--text-secondary); text-decoration: none; }
-  .nav a:hover { color: var(--text); }
-  .status-bar { font-size: 11px; color: var(--text-muted); font-family: var(--mono); text-align: right; }
-  .status-bar .stale { color: var(--turn); }
-  .main { max-width: 1200px; margin: 0 auto; padding: 28px 24px; }
-  h2 { font-size: 20px; letter-spacing: -0.02em; margin: 40px 0 6px; }
-  .lede { color: var(--text-secondary); font-size: 14px; max-width: 760px; margin-bottom: 18px; }
+  .nav a { color: var(--text-secondary); text-decoration: none; } .nav a:hover { color: var(--text); }
+  .status-bar { font-size: 11px; color: var(--text-muted); font-family: var(--mono); }
+  .status-bar .stale { color: var(--bad); }
+  .main { max-width: 1200px; margin: 0 auto; padding: 22px 24px 40px; }
+  h1 { font-size: 24px; letter-spacing: -0.02em; }
+  .sub { color: var(--text-secondary); font-size: 14px; margin: 2px 0 18px; }
+  h2 { font-size: 17px; letter-spacing: -0.01em; margin: 34px 0 12px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  h2 small { font-size: 12px; font-weight: 400; color: var(--text-muted); }
+  .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; min-width: 0; }
+  .eyebrow { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+  .pos { color: var(--good); } .neg { color: var(--bad); }
 
-  /* intro */
-  .intro h1 { font-size: 30px; letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 10px; }
-  .intro p { font-size: 15px; color: var(--text-secondary); max-width: 780px; }
-  .intro p b { color: var(--text); }
-  .intro .why { margin-top: 10px; }
+  /* hero */
+  .hero { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 16px; }
+  .state-name { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin: 4px 0 6px; line-height: 1.15; }
+  .state-means { font-size: 13.5px; color: var(--text-secondary); }
+  .duel { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0 14px; }
+  .duel div { background: var(--bg-raised); border-radius: var(--radius); padding: 10px 12px; }
+  .duel .v { font-family: var(--mono); font-size: 30px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.1; }
+  .duel .l { font-size: 11.5px; color: var(--text-muted); }
+  .watchfor { display: flex; align-items: center; gap: 10px; border: 1px dashed rgba(234,179,8,0.45); border-radius: var(--radius); padding: 9px 12px; font-size: 13px; }
+  .watchfor b { color: var(--watch); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.07em; white-space: nowrap; }
+  .map-svg { width: 100%; height: auto; display: block; margin-top: 6px; }
+  .map-key { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--text-secondary); margin-top: 6px; }
+  .map-key i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; }
 
-  /* where we are */
-  .now { margin-top: 24px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 18px; }
-  .now-card { background: var(--bg-card); border: 1px solid var(--border); border-left: 4px solid var(--watch); border-radius: var(--radius-lg); padding: 22px 24px; }
-  .eyebrow { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
-  .now-name { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin: 6px 0 10px; line-height: 1.2; }
-  .now-card p { font-size: 14px; color: var(--text-secondary); margin-bottom: 10px; }
-  .now-card p b { color: var(--text); }
-  .figs { display: flex; gap: 24px; flex-wrap: wrap; margin: 14px 0 4px; }
-  .fig-v { font-family: var(--mono); font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
-  .fig-l { font-size: 11px; color: var(--text-muted); }
-  .map { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; }
-  .map-row { display: grid; grid-template-columns: 112px minmax(0,1fr); gap: 12px; padding: 9px 10px; border-radius: var(--radius); align-items: start; }
-  .map-row + .map-row { margin-top: 4px; }
-  .map-row.here { background: var(--watch-dim); outline: 1px solid rgba(234,179,8,0.35); }
-  .map-dirs { font-family: var(--mono); font-size: 11px; color: var(--text-secondary); line-height: 1.6; }
-  .map-name { font-size: 13px; font-weight: 600; }
-  .map-means { font-size: 12px; color: var(--text-secondary); }
-  .here-tag { font-size: 10px; font-weight: 700; color: var(--watch); text-transform: uppercase; letter-spacing: 0.06em; margin-left: 6px; }
-  .rule-note { font-size: 11px; color: var(--text-muted); margin-top: 10px; }
+  .gapcard { margin-top: 16px; }
+  .gapcard .chart { height: 230px; }
+  .cap { font-size: 11.5px; color: var(--text-muted); margin-top: 6px; }
 
-  /* signals */
-  .tally { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
-  .signals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-  .sig { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-  .sig-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-  .sig-n { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
-  .sig-title { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; }
-  .pill { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap; letter-spacing: 0.02em; }
+  /* tiles */
+  .legend-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pill { font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
   .pill.steady { background: var(--steady-dim); color: #8fbcf3; }
   .pill.watch { background: var(--watch-dim); color: var(--watch); }
-  .pill.turn { background: var(--turn-dim); color: #f87171; }
+  .pill.turn { background: var(--turn-dim); color: var(--bad); }
   .pill.pending { background: var(--pending-dim); color: var(--text-secondary); }
-  .sig-value { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-  .sig-value .v { font-family: var(--mono); font-size: 28px; font-weight: 600; letter-spacing: -0.03em; }
-  .sig-value .l { font-size: 12px; color: var(--text-muted); }
-  .sig p { font-size: 13px; color: var(--text-secondary); }
-  .sig p.now-t { color: var(--text); font-size: 13.5px; }
-  .box { border-radius: var(--radius); padding: 10px 12px; font-size: 12.5px; line-height: 1.5; }
-  .box b { display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 2px; }
-  .box.rule { background: var(--bg-raised); border-left: 3px solid var(--watch); color: var(--text); }
-  .box.rule b { color: var(--watch); }
-  .box.why { background: transparent; border-left: 3px solid var(--border-light); color: var(--text-secondary); padding-top: 4px; padding-bottom: 4px; }
-  .box.why b { color: var(--text-muted); }
-  .sig .extra { font-size: 12px; color: var(--text-muted); }
-  .spark { height: 70px; position: relative; }
-  .spark-key { font-size: 11px; color: var(--text-muted); margin-top: -4px; }
-  .spark-key i { display: inline-block; width: 10px; height: 2px; vertical-align: middle; margin: 0 4px 0 8px; }
-  .sig a.more { font-size: 12px; color: var(--text-secondary); margin-top: auto; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(255px, 1fr)); gap: 12px; }
+  .tile { background: var(--bg-card); border: 1px solid var(--border); border-top: 3px solid var(--border-light); border-radius: var(--radius-lg); padding: 13px 14px 12px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .tile.steady { border-top-color: var(--steady); } .tile.watch { border-top-color: var(--watch); } .tile.turn { border-top-color: var(--turn); }
+  .tile-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .tile-n { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+  .tile-q { font-size: 14px; font-weight: 600; line-height: 1.25; min-height: 2.5em; }
+  .tile-v { font-family: var(--mono); font-size: 26px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
+  .tile-rule { font-size: 11px; color: var(--text-muted); margin-top: auto; }
+  .spark { height: 42px; position: relative; }
+  .bars { height: 70px; position: relative; }
+  .tile details summary { font-size: 11px; color: var(--text-secondary); cursor: pointer; list-style: none; }
+  .tile details summary::-webkit-details-marker { display: none; }
+  .tile details summary::before { content: '+ '; } .tile details[open] summary::before { content: '− '; }
+  .tile details p { font-size: 12px; color: var(--text-secondary); margin-top: 6px; }
 
-  /* stack table */
-  .tbl-wrap { overflow-x: auto; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 600; padding: 10px 14px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.18); }
-  td { padding: 11px 14px; border-bottom: 1px solid rgba(30,37,48,0.6); vertical-align: top; color: var(--text-secondary); }
-  td:first-child { color: var(--text); font-weight: 600; }
+  .gauge { font-size: 10.5px; }
+  .g-head { display: flex; justify-content: space-between; color: var(--text-muted); margin-bottom: 3px; gap: 6px; }
+  .g-head b { color: var(--text); font-family: var(--mono); font-weight: 600; }
+  .g-bar { position: relative; height: 10px; display: flex; }
+  .g-bar span { height: 100%; }
+  .g-bar span:first-child { border-radius: 3px 0 0 3px; } .g-bar span:last-of-type { border-radius: 0 3px 3px 0; }
+  .z-steady { background: var(--steady-dim); } .z-watch { background: var(--watch-dim); } .z-turn { background: var(--turn-dim); }
+  .g-mark { position: absolute; top: -4px; width: 3px; height: 18px; background: var(--text); border-radius: 2px; transform: translateX(-1.5px); box-shadow: 0 0 0 2px var(--bg-card); }
+  .gauge + .gauge { margin-top: 7px; }
+
+  /* stack strip */
+  .stack { display: flex; flex-direction: column; gap: 8px; }
+  .lane { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 12px; align-items: center; background: var(--bg-card); border: 1px solid var(--border); border-left: 4px solid var(--border-light); border-radius: var(--radius); padding: 9px 12px; }
+  .lane.sq { border-left-color: var(--turn); } .lane.mx { border-left-color: var(--watch); } .lane.bn { border-left-color: #22c55e; } .lane.nx { border-left-color: var(--text-muted); border-left-style: dashed; }
+  .lane-k { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; }
+  .lane.sq .lane-k { color: var(--bad); } .lane.mx .lane-k { color: var(--watch); } .lane.bn .lane-k { color: var(--good); } .lane.nx .lane-k { color: var(--text-secondary); }
+  .lane-g { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; }
+  .cos { display: flex; flex-wrap: wrap; gap: 5px; }
+  .co { font-size: 11.5px; padding: 3px 7px; border-radius: 5px; background: var(--bg-raised); border: 1px solid var(--border-light); white-space: nowrap; cursor: help; }
+  .co .t { font-family: var(--mono); font-size: 10.5px; color: var(--watch); margin-left: 4px; }
+  .co.priv { color: var(--text-secondary); } .co.priv .t { color: var(--text-muted); }
+  .lane-note { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  /* charts */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .panel { scroll-margin-top: 60px; }
+  .panel-title { font-size: 13.5px; font-weight: 600; }
+  .chart { position: relative; height: 220px; margin-top: 8px; }
+  .chart.short { height: 180px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+  th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 600; padding: 5px 6px; border-bottom: 1px solid var(--border); }
+  td { padding: 5px 6px; border-bottom: 1px solid rgba(30,37,48,0.6); }
   tr:last-child td { border-bottom: none; }
   td.num, th.num { text-align: right; font-family: var(--mono); white-space: nowrap; }
-  .sigref { font-family: var(--mono); font-size: 11px; color: var(--watch); white-space: nowrap; }
+  .sw { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
+  select { font-family: var(--font); font-size: 11.5px; padding: 3px 6px; border-radius: 5px; border: 1px solid var(--border); background: var(--bg); color: var(--text); max-width: 100%; margin-top: 6px; }
 
-  .cos { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
-  .co { font-size: 11.5px; padding: 3px 8px; border-radius: 5px; background: var(--bg-raised); border: 1px solid var(--border-light); color: var(--text); white-space: nowrap; cursor: help; }
-  .co .t { font-family: var(--mono); font-size: 10.5px; color: var(--watch); margin-left: 4px; }
-  .co.priv { color: var(--text-secondary); }
-  .co.priv .t { color: var(--text-muted); }
-  .co-row { margin-top: 10px; }
-  .co-row .k { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; }
-  .co-row .k.sq { color: #f87171; } .co-row .k.bn { color: #4ade80; } .co-row .k.nx { color: var(--watch); }
-  .co-row .sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
-  .sig .co-row { border-top: 1px solid var(--border); padding-top: 10px; }
-  details.roster { margin-top: 10px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px 16px; }
-  details.roster summary { cursor: pointer; font-size: 13px; color: var(--text-secondary); }
-  .roster h4 { font-size: 12px; margin: 14px 0 4px; color: var(--text); }
-  .roster p { font-size: 12px; color: var(--text-secondary); margin: 2px 0; }
-  .roster p b { color: var(--text); font-weight: 600; }
-  /* evidence charts */
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; min-width: 0; display: flex; flex-direction: column; scroll-margin-top: 70px; }
-  .panel.wide { grid-column: 1 / -1; }
-  .panel-head { padding: 13px 16px 0; }
-  .panel-title { font-size: 14px; font-weight: 600; }
-  .panel-q { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-  .panel-body { padding: 12px 16px 16px; flex: 1; }
-  .chart { position: relative; height: 250px; }
-  .chart.short { height: 200px; }
-  .read { font-size: 12.5px; color: var(--text-secondary); margin-top: 10px; }
-  .read b { color: var(--text); font-weight: 600; }
-  .src { font-size: 11px; color: var(--text-muted); margin-top: 8px; }
-  .empty { border: 1px dashed var(--border-light); border-radius: var(--radius); padding: 18px; font-size: 12px; color: var(--text-muted); text-align: center; }
-  .controls select { font-family: var(--font); font-size: 12px; padding: 4px 8px; border-radius: 5px; border: 1px solid var(--border); background: var(--bg); color: var(--text); max-width: 100%; margin-top: 8px; }
-  .panel table { font-size: 12px; } .panel td, .panel th { padding: 6px 8px; }
-  .panel td:first-child { font-weight: 500; }
-  .sw { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
-  .ok { color: #4ade80; } .err { color: #f87171; } .skip { color: var(--text-muted); }
-  .pos { color: #4ade80; } .neg { color: #f87171; }
-
-  /* glossary */
-  .gloss { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-  .gloss div { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; font-size: 12.5px; color: var(--text-secondary); }
-  .gloss b { display: block; color: var(--text); font-size: 13px; margin-bottom: 2px; }
-  footer { font-size: 11.5px; color: var(--text-muted); text-align: center; padding: 30px 0 40px; line-height: 1.7; max-width: 780px; margin: 0 auto; }
+  /* fine print */
+  .more { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 30px; }
+  .more details { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; font-size: 12px; color: var(--text-secondary); }
+  .more summary { cursor: pointer; color: var(--text); font-weight: 600; font-size: 12.5px; }
+  .more p { margin-top: 6px; } .more p b { color: var(--text); }
+  .ok { color: var(--good); } .err { color: var(--bad); } .skip { color: var(--text-muted); }
+  footer { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 26px; }
 
   @media (max-width: 900px) {
-    .now, .signals, .grid { grid-template-columns: 1fr; }
-    .gloss { grid-template-columns: 1fr 1fr; }
+    .hero, .grid, .more { grid-template-columns: 1fr; }
     .nav { display: none; }
   }
   @media (max-width: 560px) {
-    .main { padding: 20px 16px; } .header { padding: 10px 16px; }
-    .intro h1 { font-size: 24px; } .now-name { font-size: 22px; }
-    .gloss { grid-template-columns: 1fr; }
-    .map-row { grid-template-columns: 1fr; gap: 2px; }
-    .chart { height: 220px; }
-    #t-who thead { display: none; }
-    #t-who tr, #t-who td { display: block; }
-    #t-who tr { border-bottom: 1px solid var(--border); padding: 6px 0; }
-    #t-who td { border: none; padding: 4px 14px; }
-    #t-who td[data-l]::before { content: attr(data-l); display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); font-weight: 600; }
+    .main { padding: 16px 16px 30px; } .header { padding: 9px 16px; }
+    h1 { font-size: 20px; } .state-name { font-size: 22px; } .duel .v { font-size: 24px; }
+    .lane { grid-template-columns: 1fr; gap: 6px; }
   }
 </style>
 </head>
 <body>
 <header class="header">
-  <div class="logo"><img src="icon.svg" alt="" width="26" height="26" style="border-radius:6px">AI Compute Monitor</div>
-  <nav class="nav"><a href="#signals">Signals</a><a href="#who">Who it affects</a><a href="#evidence">Charts</a><a href="#glossary">Terms</a></nav>
+  <div class="logo"><img src="icon.svg" alt="" width="24" height="24" style="border-radius:6px">AI Compute Monitor</div>
+  <nav class="nav"><a href="#signals">Signals</a><a href="#who">Who</a><a href="#charts">Charts</a></nav>
   <div class="status-bar" id="status-line">loading…</div>
 </header>
 
 <main class="main">
-  <section class="intro">
-    <h1>Reading the AI chip cycle: supply, demand, and who absorbs the gap</h1>
-    <p>Two forces set the balance in AI compute. Falling AI prices pull in more usage, and more usage means demand for more chips. New chips, data centers and power connections add supply. Rental prices show which force is ahead. Rising chip rents mean demand is outrunning supply. Falling rents mean supply has caught up. When AI output gets cheaper faster than the chips that produce it, the gap lands on whoever sits between the two.</p>
-    <p class="why"><b>Prices move before earnings do.</b> This page tracks three of them daily: what it costs to rent an AI chip, what AI output sells for, and how fast Big Tech is spending. Each signal below states, in advance, the rule that would mark a change in direction, so you can check every reading against the numbers.</p>
+  <h1>Reading the AI chip cycle</h1>
+  <p class="sub">Supply vs demand for AI compute, read from prices each day.</p>
+
+  <section class="hero">
+    <div class="card" id="state"></div>
+    <div class="card">
+      <div class="eyebrow">Where each chip sits · 3-month change</div>
+      <div id="map"></div>
+      <div class="map-key" id="map-key"></div>
+    </div>
   </section>
 
-  <section class="now" id="now"></section>
+  <section class="card gapcard">
+    <div class="eyebrow">The squeeze: AI output price vs chip rent, indexed to 100</div>
+    <div class="chart"><canvas id="c-gap"></canvas></div>
+    <div class="cap">Shaded = revenue a chip-hour has lost against what it costs to rent.</div>
+  </section>
 
-  <h2 id="signals">Seven signals to watch</h2>
-  <p class="lede">Each card answers one question. <b style="color:var(--text)">Steady</b> means no turn. <b style="color:var(--watch)">Watch</b> means it is moving toward one. <b style="color:#f87171">Turning</b> means the rule on the card has been met. Signals 1, 2, 3 and 6 track the chip cycle; 7 tracks whether power is the limit. 4 and 5 still need more data.</p>
-  <div class="tally" id="tally"></div>
-  <div class="signals" id="signals-grid"></div>
+  <h2 id="signals">Seven signals <span class="legend-pills" id="tally"></span></h2>
+  <div class="tiles" id="tiles"></div>
 
-  <h2 id="who">Who gets squeezed, by name</h2>
-  <p class="lede">The same price moves help one part of the AI stack and hurt another. Each row names the companies in that group and the signal that warns first. Tap a name for why it is exposed. Names are exposure, not recommendations; check current filings.</p>
-  <div class="tbl-wrap"><table id="t-who"></table></div>
-  <details class="roster"><summary>Why each company is on the list</summary><div id="roster"></div></details>
+  <h2 id="who">Who's squeezed <small>names are exposure, not recommendations · hover a name for why</small></h2>
+  <div class="stack" id="stack"></div>
 
-  <h2 id="evidence">The evidence</h2>
-  <p class="lede">The charts behind the signals. Hover any line for exact values.</p>
+  <h2 id="charts">Charts</h2>
   <div class="grid">
-    <section class="panel" id="p-rent">
-      <div class="panel-head"><div class="panel-title">What it costs to rent an AI chip</div><div class="panel-q">Dollars per chip per hour, by Nvidia generation (oldest A100 → newest B200)</div></div>
-      <div class="panel-body">
-        <div class="chart"><canvas id="c-ocpi"></canvas></div>
-        <div class="tbl-wrap" style="margin-top:10px;border:none;background:transparent"><table id="t-rent"></table></div>
-        <div class="src">Ornn Compute Price Index: average of actual rental deals, settled daily. Ornn also sells compute, so treat it as one source. "Marketplace low" = cheapest verified listing on Vast.ai, a floor price.</div>
-      </div>
+    <section class="card panel" id="p-rent">
+      <div class="panel-title">Chip rent, $/hour</div>
+      <div class="chart"><canvas id="c-ocpi"></canvas></div>
+      <table id="t-rent"></table>
     </section>
-    <section class="panel" id="p-tokens">
-      <div class="panel-head"><div class="panel-title">What AI output sells for</div><div class="panel-q">Dollars per million tokens (a token ≈ ¾ of a word)</div></div>
-      <div class="panel-body">
-        <div class="chart"><canvas id="c-otpi"></canvas></div>
-        <div class="read" id="r-otpi"></div>
-        <div class="src">Ornn Token Price Index. "Frontier labs" = OpenAI, Anthropic, Google. "Open models" = freely licensed models anyone can serve, the market where chip renters compete.</div>
-      </div>
+    <section class="card panel" id="p-tokens">
+      <div class="panel-title">AI output price, $ per million tokens</div>
+      <div class="chart"><canvas id="c-otpi"></canvas></div>
+      <div class="cap">Frontier = OpenAI, Anthropic, Google. Open = models any provider can serve.</div>
     </section>
-
-    <section class="panel" id="p-breakeven">
-      <div class="panel-head"><div class="panel-title">How hard each chip must work to pay its rent</div><div class="panel-q">Millions of tokens an H100 must sell per hour to cover rent</div></div>
-      <div class="panel-body">
-        <div class="chart"><canvas id="c-req"></canvas></div>
-        <div class="read" id="r-req"></div>
-        <div class="src">H100 hourly rent ÷ open-model price per token. Rising means each chip must do more work for the same revenue.</div>
-      </div>
+    <section class="card panel" id="p-capex">
+      <div class="panel-title">Big Tech capex growth vs a year earlier</div>
+      <div class="chart"><canvas id="c-capex-yoy"></canvas></div>
+      <div class="cap">Amber = slower than the quarter before. Red = below a year earlier. 2022: amber, amber, then red.</div>
     </section>
-    <section class="panel" id="p-capex">
-      <div class="panel-head"><div class="panel-title">Big Tech capex growth</div><div class="panel-q">Microsoft + Alphabet + Amazon + Meta, change vs the same quarter a year earlier</div></div>
-      <div class="panel-body">
-        <div class="chart"><canvas id="c-capex-yoy"></canvas></div>
-        <div class="read" id="r-capex"></div>
-        <div class="src">SEC filings, purchases of property and equipment (Amazon includes finance leases).</div>
-      </div>
+    <section class="card panel" id="p-capex-co">
+      <div class="panel-title">Capex by company, $B per quarter</div>
+      <div class="chart"><canvas id="c-capex"></canvas></div>
     </section>
-
-    <section class="panel" id="p-old">
-      <div class="panel-head"><div class="panel-title">Older chip vs newest chip, per unit of work</div><div class="panel-q">Above 1.00 = the old H100 costs more per unit of work than a B200</div></div>
-      <div class="panel-body">
-        <div class="chart short"><canvas id="c-ret"></canvas></div>
-        <div class="read" id="r-ret"></div>
-        <div class="src" id="s-perf"></div>
-      </div>
+    <section class="card panel" id="p-breakeven">
+      <div class="panel-title">Tokens an H100 must sell per hour to cover rent</div>
+      <div class="chart"><canvas id="c-req"></canvas></div>
     </section>
-    <section class="panel" id="p-term">
-      <div class="panel-head"><div class="panel-title">Rent today vs long-term contracts</div><div class="panel-q">Hand-logged from reported deals; no free data feed exists</div></div>
-      <div class="panel-body">
-        <div class="tbl-wrap" style="border:none;background:transparent"><table id="t-term"></table></div>
-        <div class="read" id="r-term"></div>
-      </div>
+    <section class="card panel" id="p-old">
+      <div class="panel-title">H100 vs B200 cost per unit of work</div>
+      <div class="chart"><canvas id="c-ret"></canvas></div>
+      <div class="cap">Above 1.00 = retire H100s. Uses a placeholder 2.5× B200 factor.</div>
     </section>
-
-    <section class="panel wide" id="p-capex-co">
-      <div class="panel-head"><div class="panel-title">Capex by company</div><div class="panel-q">Billions of dollars per quarter</div></div>
-      <div class="panel-body">
-        <div class="grid" style="gap:16px">
-          <div class="chart"><canvas id="c-capex"></canvas></div>
-          <div class="tbl-wrap" style="border:none;background:transparent"><table id="t-capex"></table></div>
-        </div>
-      </div>
+    <section class="card panel" id="p-grid">
+      <div class="panel-title">Grid load growth, 12 months</div>
+      <div class="chart short"><canvas id="c-load"></canvas></div>
+      <div class="cap">Dashed = 3% tightening line.</div>
     </section>
-
-    <section class="panel" id="p-power">
-      <div class="panel-head"><div class="panel-title">AI data center power</div><div class="panel-q">Gigawatts of power at tracked AI data centers worldwide</div></div>
-      <div class="panel-body">
-        <div class="chart short"><canvas id="c-dc"></canvas></div>
-        <div class="read" id="r-dc"></div>
-        <div class="src">Epoch AI Frontier Data Centers, from satellite images and permits. Dashed = sites' announced timelines.</div>
-      </div>
+    <section class="card panel">
+      <div class="panel-title">Industrial power price growth, 12 months</div>
+      <div class="chart short"><canvas id="c-px"></canvas></div>
     </section>
-    <section class="panel wide" id="p-grid">
-      <div class="panel-head"><div class="panel-title">The grid: how fast load and prices are rising</div><div class="panel-q">Growth over the last 12 months vs the 12 months before, which strips out weather and season</div></div>
-      <div class="panel-body">
-        <div class="grid" style="gap:16px">
-          <div><div class="chart short"><canvas id="c-load"></canvas></div><div class="src">Electricity demand, PJM (13 states incl. Virginia, the largest data center market) and ERCOT (Texas). Dashed = 3%, the "tightening" line.</div></div>
-          <div><div class="chart short"><canvas id="c-px"></canvas></div><div class="src">Industrial electricity price, 12-month average vs prior 12 months. Data-center states and the US average.</div></div>
-        </div>
-        <div class="read" id="r-grid"></div>
-        <div class="src">EIA Open Data. Prices run about three months behind; load runs two days behind.</div>
-      </div>
+    <section class="card panel" id="p-power">
+      <div class="panel-title">AI data center power, GW</div>
+      <div class="chart short"><canvas id="c-dc"></canvas></div>
+      <div class="cap">Dashed = announced timelines.</div>
     </section>
-    <section class="panel" id="p-history">
-      <div class="panel-head"><div class="panel-title">The long view: cost of AI at a fixed quality</div><div class="panel-q">Cheapest model that matches a given benchmark score, log scale</div></div>
-      <div class="panel-body">
-        <div class="controls" id="epoch-ctl"></div>
-        <div class="chart short"><canvas id="c-epoch"></canvas></div>
-        <div class="src">Epoch AI. Each step down = a cheaper model reaching the same score. Dataset ends Feb 2025.</div>
-      </div>
-    </section>
-
-    <section class="panel wide">
-      <div class="panel-head"><div class="panel-title">Data sources and freshness</div><div class="panel-q">If a source fails, the page keeps its last good data and marks it stale here</div></div>
-      <div class="panel-body"><div class="tbl-wrap" style="border:none;background:transparent"><table id="t-status"></table></div></div>
+    <section class="card panel" id="p-history">
+      <div class="panel-title">Long view: cost at a fixed quality</div>
+      <div id="epoch-ctl"></div>
+      <div class="chart short"><canvas id="c-epoch"></canvas></div>
     </section>
   </div>
 
-  <h2 id="glossary">Terms used</h2>
-  <div class="gloss">
-    <div><b>Token</b>The unit AI output is sold in, about ¾ of a word. Prices are quoted per million.</div>
-    <div><b>Chip rent</b>What a company pays per hour to use one AI chip in someone else's data center.</div>
-    <div><b>A100 / H100 / H200 / B200</b>Nvidia AI chips, oldest to newest. H100 (2023) is the most widely installed.</div>
-    <div><b>Capex</b>Capital spending: data centers, chips, power equipment. Chipmakers' sales follow its growth.</div>
-    <div><b>Neocloud</b>A company whose business is renting out AI chips, often bought with borrowed money.</div>
-    <div><b>Open models</b>AI models anyone can download and run, so many providers sell the identical product on price.</div>
+  <div class="more">
+    <details><summary>How each signal is scored</summary><div id="method"></div></details>
+    <details><summary>Why each company is listed</summary><div id="roster"></div></details>
+    <details><summary>Data sources and freshness</summary><table id="t-status"></table></details>
+    <details><summary>Terms</summary>
+      <p><b>Token:</b> unit AI output is sold in, about ¾ of a word.</p>
+      <p><b>Chip rent:</b> hourly price to use one AI chip in someone else's data center.</p>
+      <p><b>A100 → H100 → H200 → B200:</b> Nvidia AI chips, oldest to newest.</p>
+      <p><b>Neocloud:</b> company that rents out AI chips, often debt-financed.</p>
+      <p><b>Capex:</b> spending on data centers, chips and power gear.</p>
+      <p><b>PJM / ERCOT:</b> the Mid-Atlantic (incl. Virginia) and Texas power grids.</p>
+    </details>
   </div>
-
-  <footer>Data: Ornn, OpenRouter, Vast.ai, Epoch AI (CC-BY), SEC EDGAR, EIA. Rules and thresholds are set in advance and computed from the data each day; they are judgment calls, not forecasts. For information only, not investment advice.</footer>
+  <footer>Ornn · OpenRouter · Vast.ai · Epoch AI (CC-BY) · SEC EDGAR · EIA. Thresholds set in advance; not forecasts, not investment advice.</footer>
 </main>
 
 <script>
@@ -309,25 +244,15 @@ const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).
 const S = ['--s1','--s2','--s3','--s4','--s5','--s6'].map(css);
 const GPU_ORDER = ['A100 SXM4','H100 SXM','H200','B200'];
 const GPU_COLOR = Object.fromEntries(GPU_ORDER.map((g,i) => [g, S[i]]));
-const GPU_NAME = { 'A100 SXM4': 'A100 (2020)', 'H100 SXM': 'H100 (2023)', 'H200': 'H200 (2024)', 'B200': 'B200 (2025)' };
-const SPARK_KEY = {
-  new_rent: 'Average H200/B200 rent, last 3 months',
-  old_rent: 'H100 rent, last 3 months',
-  squeeze: '<i style="background:var(--s1)"></i>chip rent<i style="background:var(--s2)"></i>AI output price, both indexed to 100',
-  breakeven: 'Tokens per hour an H100 must sell, last 3 months',
-  capex: 'Capex growth vs a year earlier, last 12 quarters; dashed = zero',
-  power: '<i style="background:var(--s1)"></i>PJM<i style="background:var(--s2)"></i>ERCOT 12-month load growth since 2021; dashed = 3%',
-};
-const STATUS = { steady: 'Steady', watch: 'Watch', turn: 'Turning', pending: 'Not enough data' };
-const STATUS_ICON = { steady: '●', watch: '▲', turn: '◆', pending: '○' };
-const SIG_PANEL = { new_rent: 'p-rent', old_rent: 'p-old', squeeze: 'p-tokens', breakeven: 'p-breakeven', term: 'p-term', capex: 'p-capex', power: 'p-grid' };
-const fmtPct = (x, d=0) => x == null ? '—' : `${x >= 0 ? '+' : ''}${(x*100).toFixed(d)}%`;
-const cls = x => x == null ? '' : (x >= 0 ? 'pos' : 'neg');
+const GPU_NAME = { 'A100 SXM4': 'A100', 'H100 SXM': 'H100', 'H200': 'H200', 'B200': 'B200' };
+const STATUS = { steady: 'Steady', watch: 'Watch', turn: 'Turning', pending: 'No data yet' };
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const last = s => s && s.length ? s[s.length-1] : null;
+const fmtPct = (x, d=0) => x == null ? '—' : `${x >= 0 ? '+' : ''}${(x*100).toFixed(d)}%`;
+const cls = x => x == null ? '' : (x >= 0 ? 'pos' : 'neg');
 const money = (v, d=2) => v == null ? '—' : `$${v.toFixed(d)}`;
-const ARROW = { up: '▲ rising', down: '▼ falling', flat: '■ flat' };
+const FMT = { pct: v => fmtPct(v), pts: v => `${(v*100).toFixed(0)} pts`, x: v => `${v.toFixed(2)}×` };
 
 Chart.defaults.color = css('--text-secondary');
 Chart.defaults.font.family = css('--font');
@@ -338,233 +263,197 @@ function lineChart(id, datasets, opts = {}) {
   const el = $(id); if (!el) return;
   return new Chart(el, {
     type: 'line',
-    data: { datasets: datasets.map(d => ({
-      borderWidth: 2, pointRadius: d.data.length === 1 ? 4 : 0, pointHoverRadius: 4, tension: 0.15,
-      pointBackgroundColor: d.borderColor, spanGaps: true, ...d,
-      data: d.data.map(([x, y]) => ({ x, y })) })) },
+    data: { datasets: datasets.map(d => ({ borderWidth: 2, pointRadius: d.data.length === 1 ? 4 : 0, pointHoverRadius: 4, tension: 0.15, pointBackgroundColor: d.borderColor, spanGaps: true, ...d, data: d.data.map(([x, y]) => ({ x, y })) })) },
     options: {
-      responsive: true, maintainAspectRatio: false, animation: false,
-      interaction: { mode: 'index', intersect: false },
+      responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: { display: !opts.spark && datasets.filter(d => !d.label.startsWith('_')).length > 1, position: 'bottom', labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true, pointStyle: 'rectRounded', filter: i => !i.text.startsWith('_') } },
         tooltip: { enabled: !opts.spark, filter: i => !i.dataset.label.startsWith('_'), callbacks: { label: c => `${c.dataset.label}: ${(opts.fmt || (v => v.toFixed(2)))(c.parsed.y)}` } },
       },
       scales: {
-        x: { type: 'time', display: !opts.spark, time: { unit: opts.unit || undefined, tooltipFormat: opts.tipFmt || 'MMM d, yyyy' }, grid: { display: false }, ticks: { maxRotation: 0, autoSkipPadding: 16 } },
-        y: { type: opts.log ? 'logarithmic' : 'linear', display: !opts.spark,
-             ticks: { callback: opts.log ? ((v) => [1,2,5].includes(+(v / 10 ** Math.floor(Math.log10(v))).toFixed(6)) ? (opts.tick || (x => x))(v) : '') : (opts.tick || (v => v)) }, beginAtZero: !!opts.zero },
+        x: { type: 'time', display: !opts.spark, time: { unit: opts.unit, tooltipFormat: opts.tipFmt || 'MMM d, yyyy' }, grid: { display: false }, ticks: { maxRotation: 0, autoSkipPadding: 16 } },
+        y: { type: opts.log ? 'logarithmic' : 'linear', display: !opts.spark, beginAtZero: !!opts.zero,
+             ticks: { callback: opts.log ? (v => [1,2,5].includes(+(v / 10 ** Math.floor(Math.log10(v))).toFixed(6)) ? (opts.tick || (x => x))(v) : '') : (opts.tick || (v => v)) } },
       },
     },
   });
 }
-const flatLine = (s, y, label = '_ref') => ({ label, data: s.length ? [[s[0][0], y], [last(s)[0], y]] : [], borderColor: css('--text-muted'), borderDash: [4, 4], borderWidth: 1, pointRadius: 0 });
+const flatLine = (s, y, label = '_ref') => ({ label, data: s.length ? [[s[0][0], y], [last(s)[0], y]] : [], borderColor: css('--text-muted'), borderDash: [4, 4], borderWidth: 1, pointRadius: 0, fill: false });
+function rows(id, head, body) { $(id).innerHTML = `<thead><tr>${head.map(h => `<th class="${h.num ? 'num' : ''}">${h.t}</th>`).join('')}</tr></thead><tbody>${body.join('')}</tbody>`; }
 
-function rows(tableId, head, body) {
-  $(tableId).innerHTML = `<thead><tr>${head.map(h => `<th class="${h.num ? 'num' : ''}">${h.t}</th>`).join('')}</tr></thead><tbody>${body.join('')}</tbody>`;
-}
-
-
-const SIG_OF_GROUP = { token_renters: 'signals 3, 4', ai_output_owners: 'signals 3, 4', gpu_landlords: 'signals 1, 2, 5', chipmakers: 'signals 1, 6', hyperscalers: 'signals 1, 6', power: 'signal 7' };
-const FIRST_WARNING = {
-  token_renters: 'AI prices keep falling faster than chip rents',
-  ai_output_owners: 'Chip rents stop rising while AI prices keep falling',
-  gpu_landlords: 'H100 rent falls more than 10% in 3 months',
-  chipmakers: 'Capex growth slower in 2 of the last 3 quarters',
-  hyperscalers: 'New-chip rents fall while their capex still rises',
-  power: 'Capex cuts, which slow new data center sites',
-};
-let CO = null;
+// ---- companies
 function companies(key, D) {
   const g = D.companies.groups[key]; if (!g) return [];
-  let list = g.companies.map(c => ({ ...c }));
+  const list = g.companies.map(c => ({ ...c }));
   if (key === 'ai_output_owners') {
-    const have = new Set(list.map(c => c.ticker || c.name));
-    const alias = { 'Amazon Bedrock': 'Amazon' };
-    D.companies.live_sellers.filter(c => c.ticker && !have.has(c.ticker)).forEach(c =>
-      list.push({ name: alias[c.name] || c.name, ticker: c.ticker, why: `Sells ${c.models.join(', ')} by the token on OpenRouter today.` }));
-    list.sort((a, b) => (a.ticker ? 0 : 1) - (b.ticker ? 0 : 1));
+    const have = new Set(list.map(c => c.ticker || c.name)), alias = { 'Amazon Bedrock': 'Amazon' };
+    D.companies.live_sellers.filter(c => c.ticker && !have.has(c.ticker)).forEach(c => list.push({ name: alias[c.name] || c.name, ticker: c.ticker, why: `Sells ${c.models.join(', ')} by the token on OpenRouter today.` }));
   }
-  return list;
+  return list.sort((a, b) => (a.ticker ? 0 : 1) - (b.ticker ? 0 : 1));
 }
-const coChips = list => `<div class="cos">${list.map(c => `<span class="co ${c.ticker ? '' : 'priv'}" title="${esc(c.why)}">${esc(c.name)}<span class="t">${c.ticker ? esc(c.ticker) : 'private'}</span></span>`).join('')}</div>`;
-const coRow = (cls, label, keys, D, sub = '') => keys && keys.length ? `<div class="co-row"><div class="k ${cls}">${label}: ${keys.map(k => esc(D.companies.groups[k].label)).join(' · ')}</div>${sub ? `<div class="sub">${sub}</div>` : ''}${coChips(keys.flatMap(k => companies(k, D)))}${keys.map(k => D.companies.groups[k].note ? `<div class="sub" style="margin-top:5px">${esc(D.companies.groups[k].note)}</div>` : '').join('')}</div>` : '';
+const chips = list => `<div class="cos">${list.map(c => `<span class="co ${c.ticker ? '' : 'priv'}" title="${esc(c.name + ': ' + c.why)}">${esc(c.name)}<span class="t">${c.ticker ? esc(c.ticker) : 'private'}</span></span>`).join('')}</div>`;
+
+// ---- gauge: zones as colored segments, marker at the current value
+function gaugeHTML(g) {
+  const span = g.hi - g.lo, pos = v => Math.max(0, Math.min(100, (v - g.lo) / span * 100));
+  let from = g.lo;
+  const segs = g.zones.map(z => { const to = Math.min(z.to ?? Infinity, g.hi); const w = pos(to) - pos(from); from = to; return w > 0 ? `<span class="z-${z.status}" style="width:${w}%"></span>` : ''; }).join('');
+  const val = g.value == null ? '—' : FMT[g.fmt](g.value);
+  return `<div class="gauge"><div class="g-head"><span>${esc(g.label)}</span><b>${val}</b></div><div class="g-bar">${segs}${g.value == null ? '' : `<i class="g-mark" style="left:${pos(g.value)}%"></i>`}</div></div>`;
+}
+
+// ---- state map: 3×3 grid, AI price across (falling → rising), chip rent down (rising → falling)
+function drawMap(D) {
+  const sc = D.scenario, f = 0.05;
+  const W = 520, H = 290, L = 64, T = 22, CW = (W - L - 6) / 3, CH = (H - T - 6) / 3;
+  const xb = [[-0.6, -f], [-f, f], [f, 0.3]];   // columns, left to right
+  const yb = [[0.5, f], [f, -f], [-f, -0.3]];    // rows, top to bottom
+  const place = (v, bands, size, lo0 = 0.15, span0 = 0.7) => {
+    for (let i = 0; i < 3; i++) {
+      const [a, b] = bands[i], lo = Math.min(a, b), hi = Math.max(a, b);
+      const inside = v >= lo && v <= hi, beyondFirst = i === 0 && (a < b ? v < lo : v > hi), beyondLast = i === 2 && (a < b ? v > hi : v < lo);
+      if (inside || beyondFirst || beyondLast) { const t = Math.max(0, Math.min(1, (v - a) / (b - a))); return i * size + (lo0 + span0 * t) * size; }
+    }
+    return size * 1.5;
+  };
+  const X = v => L + place(v, xb, CW), Y = v => T + place(v, yb, CH, 0.42, 0.48);
+  const cellKey = { '0,0': 'boom', '0,1': 'transition', '0,2': 'glut', '1,0': 'passthrough', '2,0': 'pull' };
+  const short = { boom: 'Demand > supply', transition: 'Rents stalled', glut: 'Supply catching up', passthrough: 'Cost passed on', pull: 'Everyone pays more' };
+  let svg = `<svg class="map-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Market state map">`;
+  for (let c = 0; c < 3; c++) for (let r = 0; r < 3; r++) {
+    const k = cellKey[`${c},${r}`], here = k && k === sc.current;
+    const fill = k === 'glut' ? 'rgba(239,68,68,0.10)' : k === 'boom' ? 'rgba(57,135,229,0.10)' : k ? 'rgba(139,149,165,0.06)' : 'rgba(139,149,165,0.025)';
+    svg += `<rect x="${L + c*CW + 2}" y="${T + r*CH + 2}" width="${CW - 4}" height="${CH - 4}" rx="7" fill="${fill}" stroke="${here ? css('--watch') : k === 'glut' ? 'rgba(239,68,68,0.5)' : 'rgba(139,149,165,0.15)'}" stroke-width="${here ? 2 : 1}" ${k === 'glut' ? 'stroke-dasharray="5 4"' : ''}/>`;
+    if (k) svg += `<text x="${L + c*CW + 10}" y="${T + r*CH + 19}" font-size="11" font-weight="600" fill="${here ? css('--text') : css('--text-secondary')}">${esc(short[k])}</text>${here ? `<text x="${L + c*CW + CW - 10}" y="${T + r*CH + 19}" text-anchor="end" font-size="9.5" font-weight="700" fill="${css('--watch')}">NOW</text>` : ''}`;
+  }
+  ['AI price ▼', 'AI price ■', 'AI price ▲'].forEach((t, i) => svg += `<text x="${L + i*CW + CW/2}" y="13" text-anchor="middle" font-size="10.5" fill="${css('--text-muted')}">${t}</text>`);
+  ['Rent ▲', 'Rent ■', 'Rent ▼'].forEach((t, i) => svg += `<text x="${L - 8}" y="${T + i*CH + CH/2 + 4}" text-anchor="end" font-size="10.5" fill="${css('--text-muted')}">${t}</text>`);
+  const pts = ['H100 SXM','H200','B200'].filter(g => D.gpu.chg[g] && D.gpu.chg[g].d90 != null && sc.token_chg != null)
+    .map((g, i) => ({ g, x: X(sc.token_chg) + (i - 1) * 18, y: Y(D.gpu.chg[g].d90), c: GPU_COLOR[g] }));
+  pts.forEach(p => svg += `<circle cx="${p.x}" cy="${p.y}" r="7" fill="${p.c}" stroke="${css('--bg-card')}" stroke-width="2"><title>${GPU_NAME[p.g]}: rent ${fmtPct(D.gpu.chg[p.g].d90)}, AI price ${fmtPct(sc.token_chg)}</title></circle>`);
+  if (sc.token_chg != null && sc.rent_chg != null) svg += `<circle cx="${X(sc.token_chg)}" cy="${Y(sc.rent_chg)}" r="10" fill="none" stroke="${css('--text')}" stroke-width="2.5"><title>Average: rent ${fmtPct(sc.rent_chg)}, AI price ${fmtPct(sc.token_chg)}</title></circle>`;
+  svg += '</svg>';
+  $('map').innerHTML = svg;
+  $('map-key').innerHTML = `<span><i style="border:2px solid ${css('--text')}"></i>average</span>` + pts.map(p => `<span><i style="background:${p.c}"></i>${GPU_NAME[p.g]} ${fmtPct(D.gpu.chg[p.g].d90)}</span>`).join('') + `<span>dashed red = the turn</span>`;
+}
 
 function render(D) {
-  // ---- status line and source table
   const stale = D.status.filter(s => s.stale);
-  $('status-line').innerHTML = `updated ${D.generated_at.slice(0,10)}` +
-    (stale.length ? ` · <span class="stale">stale: ${stale.map(s => esc(s.label)).join(', ')}</span>` : '');
-  rows('t-status', [{t:'Source'},{t:'State'},{t:'Last update'},{t:'Detail'}], D.status.map(s => {
-    const st = s.state === 'ok' && !s.stale ? `<span class="ok">● current</span>` :
-               s.state === 'skipped' ? `<span class="skip">○ not connected</span>` : `<span class="err">● stale</span>`;
-    return `<tr><td>${esc(s.label)}</td><td>${st}</td><td class="num">${s.last_success ? s.last_success.slice(0,10) : '—'}</td><td>${esc(s.error || s.note || '')}</td></tr>`;
-  }));
+  $('status-line').innerHTML = `updated ${D.generated_at.slice(0,10)}` + (stale.length ? ` · <span class="stale">stale: ${stale.map(s => esc(s.label)).join(', ')}</span>` : '');
 
-  // ---- where we are now
+  // ---- state card
   const sc = D.scenario, cur = sc.all.find(s => s.key === sc.current);
-  $('now').innerHTML = `
-    <div class="now-card">
-      <div class="eyebrow">Where the market is now · last 3 months</div>
-      <div class="now-name">${cur ? esc(cur.name) : 'No clean read'}</div>
-      ${cur ? `<p>${esc(cur.plain)}</p><p><b>What it means:</b> ${esc(cur.means)}</p>` : ''}
-      ${cur ? coRow('sq', 'Squeezed now', cur.squeezed, D, 'Their selling price is falling while the chips they rent cost more.') + coRow('nx', 'Mixed', ['ai_output_owners'], D, 'They sell AI output too, so they face the same price war. But they own their chips and rent them out at the rising rates.') + coRow('bn', 'Benefiting now', cur.benefits, D) : ''}
-      <div class="figs">
-        <div><div class="fig-v ${cls(sc.token_chg)}">${fmtPct(sc.token_chg)}</div><div class="fig-l">price of AI output</div></div>
-        <div><div class="fig-v ${cls(sc.rent_chg)}">${fmtPct(sc.rent_chg)}</div><div class="fig-l">chip rent (H100, H200, B200 average)</div></div>
-      </div>
-      <p style="margin-top:14px"><b>The turn to watch for:</b> chip rents start falling while AI prices keep falling. That moves the market to "Supply catching up", the phase that has come before capex cuts in past chip cycles. The squeeze then moves from the sellers above to the GPU landlords, and then to the chipmakers.</p>
-      ${(() => { const g = sc.all.find(s => s.key === 'glut'); return coRow('nx', 'Squeezed after the turn', g.squeezed, D, 'Rents on debt-financed chip fleets fall first.') + coRow('nx', 'Then', g.next, D, 'Orders follow capex down.'); })()}
+  $('state').innerHTML = `
+    <div class="eyebrow">Current state</div>
+    <div class="state-name">${cur ? esc(cur.name) : 'Off the map'}</div>
+    <div class="state-means">${cur ? esc(cur.means) : ''}</div>
+    <div class="duel">
+      <div><div class="v ${cls(sc.token_chg)}">${fmtPct(sc.token_chg)}</div><div class="l">AI output price, 3 mo</div></div>
+      <div><div class="v ${cls(sc.rent_chg)}">${fmtPct(sc.rent_chg)}</div><div class="l">Chip rent, 3 mo</div></div>
     </div>
-    <div class="map">
-      <div class="eyebrow" style="margin-bottom:8px">The possible states</div>
-      ${sc.all.map(s => `<div class="map-row ${s.key === sc.current ? 'here' : ''}">
-        <div class="map-dirs">AI price ${ARROW[s.tokens]}<br>Chip rent ${ARROW[s.rent]}</div>
-        <div><div class="map-name">${esc(s.name)}${s.key === sc.current ? '<span class="here-tag">◀ now</span>' : ''}</div><div class="map-means">${esc(s.means)}</div>${s.squeezed ? `<div class="map-means" style="margin-top:3px"><span style="color:#f87171">Squeezed:</span> ${s.squeezed.flatMap(k => companies(k, D)).slice(0, 6).map(c => esc(c.ticker || c.name)).join(', ')}</div>` : ''}</div>
-      </div>`).join('')}
-      <div class="rule-note">${esc(sc.rule)}</div>
-    </div>`;
+    <div class="watchfor"><b>Watch for</b><span>Rent ▼ while AI price ▼ (dashed cell). It preceded capex cuts in past cycles.</span></div>`;
+  drawMap(D);
 
-  // ---- signals
+  // ---- gap chart
+  const avg = gs => { const m = {}; gs.forEach(g => (D.gpu.ocpi[g] || []).forEach(([d, v]) => (m[d] = m[d] || []).push(v))); return Object.entries(m).filter(([, v]) => v.length === gs.length).sort().map(([d, v]) => [d, v.reduce((a, b) => a + b) / v.length]); };
+  const open = D.tokens.otpi_class.open || [], fleet = avg(['H100 SXM','H200','B200']);
+  const start = open.length && fleet.length ? (open[0][0] > fleet[0][0] ? open[0][0] : fleet[0][0]) : null;
+  const idx = s => { const t = s.filter(p => p[0] >= start); return t.length ? t.map(([d, v]) => [d, v / t[0][1] * 100]) : []; };
+  lineChart('c-gap', [
+    { label: 'Chip rent (H100/H200/B200)', data: idx(fleet), borderColor: S[0], borderWidth: 2.5 },
+    { label: 'AI output price (open models)', data: idx(open), borderColor: S[1], borderWidth: 2.5, fill: { target: 0, above: 'rgba(0,0,0,0)', below: 'rgba(239,68,68,0.16)' } },
+    flatLine(idx(fleet), 100),
+  ], { fmt: v => v.toFixed(0), unit: 'week' });
+
+  // ---- tiles
   const tally = {};
   D.signals.forEach(s => { const lab = s.status_label || STATUS[s.status]; (tally[lab] = tally[lab] || { n: 0, k: s.status }).n++; });
   const order = ['turn','watch','steady','pending'];
-  $('tally').innerHTML = Object.entries(tally).sort((a, b) => order.indexOf(a[1].k) - order.indexOf(b[1].k))
-    .map(([lab, t]) => `<span class="pill ${t.k}">${STATUS_ICON[t.k]} ${t.n} ${esc(lab)}</span>`).join('');
-  $('signals-grid').innerHTML = D.signals.map((s, i) => `
-    <article class="sig">
-      <div class="sig-top"><div><div class="sig-n">SIGNAL ${i+1}</div><div class="sig-title">${esc(s.title)}</div></div><span class="pill ${s.status}">${STATUS_ICON[s.status]} ${esc(s.status_label || STATUS[s.status])}</span></div>
-      <div class="sig-value"><span class="v">${esc(s.value)}</span><span class="l">${esc(s.value_label)}</span></div>
-      <div class="spark"><canvas id="spark-${s.id}"></canvas></div>
-      <div class="spark-key">${SPARK_KEY[s.id] || ''}</div>
-      <p class="now-t">${esc(s.now)}</p>
-      <div class="box rule"><b>What would mark the turn</b>${esc(s.rule)}</div>
-      <div class="box why"><b>Why it matters</b>${esc(s.why)}</div>
-      ${s.extra ? `<p class="extra">${esc(s.extra)}</p>` : ''}
-      ${s.exposure ? coRow(s.id === 'power' ? 'bn' : s.status === 'watch' || s.status === 'turn' ? 'sq' : 'nx', esc(s.exposure.label), s.exposure.groups, D) : ''}
-      <a class="more" href="#${SIG_PANEL[s.id]}">See the chart ↓</a>
-    </article>`).join('');
-
-  // sparklines
-  const avg = gs => { const m = {}; gs.forEach(g => (D.gpu.ocpi[g] || []).forEach(([d, v]) => (m[d] = m[d] || []).push(v))); return Object.entries(m).filter(([, v]) => v.length === gs.length).sort().map(([d, v]) => [d, v.reduce((a, b) => a + b) / v.length]); };
-  const sp = { spark: true };
-  lineChart('spark-new_rent', [{ label: 'H200 + B200 rent', data: avg(['H200','B200']), borderColor: S[0] }], sp);
-  lineChart('spark-old_rent', [{ label: 'H100 rent', data: D.gpu.ocpi['H100 SXM'] || [], borderColor: S[0] }], sp);
-  const open = D.tokens.otpi_class.open || [], fleet = avg(['H100 SXM','H200','B200']);
-  const idx = s => s.length ? s.map(([d, v]) => [d, v / s[0][1] * 100]) : [];
-  lineChart('spark-squeeze', [{ label: 'Chip rent', data: idx(fleet), borderColor: S[0] }, { label: 'AI price', data: idx(open), borderColor: S[1] }], sp);
-  lineChart('spark-breakeven', [{ label: 'Break-even', data: D.throughput.otpi_open.tokens_per_gpu_hour, borderColor: S[0] }], sp);
+  $('tally').innerHTML = Object.entries(tally).sort((a, b) => order.indexOf(a[1].k) - order.indexOf(b[1].k)).map(([l, t]) => `<span class="pill ${t.k}">${t.n} ${esc(l)}</span>`).join('');
   const capSig = D.signals.find(s => s.id === 'capex');
-  lineChart('spark-capex', [{ label: 'YoY', data: (capSig.series || []).slice(-12), borderColor: S[0] }, flatLine((capSig.series || []).slice(-12), 0)], sp);
-  $('spark-term').parentElement.style.display = 'none';
-  const ld = D.power.eia_demand_yoy;
-  if ($('spark-power')) lineChart('spark-power', [{ label: 'PJM', data: ld.PJM || [], borderColor: S[0] }, { label: 'ERCOT', data: ld.ERCOT || [], borderColor: S[1] }, flatLine(ld.PJM || [], 0.03)], sp);
-
-  // ---- who gets squeezed
-  const gk = Object.keys(D.companies.groups);
-  rows('t-who', [{t:'Part of the stack'},{t:'Companies'},{t:'Squeezed when'},{t:'First warning'}],
-    gk.map(k => { const g = D.companies.groups[k];
-      return `<tr><td>${esc(g.label)}</td><td data-l="Companies">${coChips(companies(k, D))}</td><td data-l="Squeezed when">${esc(g.squeezed_when || ('Benefits when ' + (g.benefits_when || '')))}</td><td data-l="First warning">${esc(FIRST_WARNING[k] || '')} <span class="sigref">${SIG_OF_GROUP[k] || ''}</span></td></tr>`; }));
-  $('roster').innerHTML = gk.map(k => `<h4>${esc(D.companies.groups[k].label)}</h4>` + companies(k, D).map(c => `<p><b>${esc(c.name)}</b> (${c.ticker ? esc(c.ticker) : 'private'}): ${esc(c.why)}</p>`).join('')).join('') +
-    `<p style="margin-top:12px">Public sellers of AI output marked "on OpenRouter today" are pulled from the live price data daily: they are the listed companies currently selling ${D.companies.live_models.map(esc).join(', ')} by the token.</p>`;
-
-  // ---- rent chart and table
-  lineChart('c-ocpi', GPU_ORDER.filter(g => D.gpu.ocpi[g]).map(g => ({ label: GPU_NAME[g], data: D.gpu.ocpi[g], borderColor: GPU_COLOR[g] })),
-    { fmt: v => `$${v.toFixed(2)}/hr`, tick: v => `$${v}`, unit: 'week', zero: true });
-  rows('t-rent', [{t:'Chip'},{t:'Rent/hr', num:true},{t:'1 week', num:true},{t:'1 month', num:true},{t:'3 months', num:true},{t:'Marketplace low', num:true}],
-    GPU_ORDER.map(g => { const o = last(D.gpu.ocpi[g] || []), c = D.gpu.chg[g] || {}, v = D.gpu.vast[g];
-      return `<tr><td><span class="sw" style="background:${GPU_COLOR[g]}"></span>${GPU_NAME[g]}</td><td class="num">${o ? money(o[1]) : '—'}</td><td class="num ${cls(c.d7)}">${fmtPct(c.d7)}</td><td class="num ${cls(c.d30)}">${fmtPct(c.d30)}</td><td class="num ${cls(c.d90)}">${fmtPct(c.d90)}</td><td class="num">${v ? money(last(v.min)[1]) : '—'}</td></tr>`; }));
-
-  // ---- token chart
-  const oc = D.tokens.otpi_class;
-  lineChart('c-otpi', [
-    { label: 'Frontier labs', data: oc.closed || [], borderColor: S[0] },
-    { label: 'Open models', data: oc.open || [], borderColor: S[1] },
-  ], { fmt: v => `$${v.toFixed(3)} per million`, tick: v => `$${v}`, unit: 'week', zero: true });
-  const ch = (s, d) => { if (!s || s.length < 2) return null; const cut = new Date(new Date(last(s)[0]) - d*864e5).toISOString().slice(0,10); const b = s.filter(p => p[0] <= cut); return b.length ? last(s)[1]/last(b)[1]-1 : null; };
-  $('r-otpi').innerHTML = `Over 3 months: frontier-lab prices <b class="${cls(ch(oc.closed,85))}">${fmtPct(ch(oc.closed,85))}</b>, open-model prices <b class="${cls(ch(oc.open,85))}">${fmtPct(ch(oc.open,85))}</b>. Compare with chip rents on the left: if AI prices fall and rents don't, someone in the middle earns less per chip.`;
-
-  // ---- break-even
-  const ri = D.throughput.otpi_open;
-  lineChart('c-req', [{ label: 'Tokens per hour (millions)', data: ri.tokens_per_gpu_hour.map(([d, v]) => [d, v / 1e6]), borderColor: S[0] }],
-    { fmt: v => `${v.toFixed(1)}M tokens/hr`, tick: v => `${v}M`, unit: 'week', zero: true });
-  $('r-req').innerHTML = ri.tokens_per_gpu_hour.length ? `<b>${(last(ri.tokens_per_gpu_hour)[1]/1e6).toFixed(0)}M</b> tokens an hour now, up from ${(ri.tokens_per_gpu_hour[0][1]/1e6).toFixed(0)}M on ${ri.tokens_per_gpu_hour[0][0]}. The question is whether chips and software can keep up. No published per-chip benchmark is logged yet to draw that line.` : '';
-
-  // ---- capex growth
+  $('tiles').innerHTML = D.signals.map((s, i) => `
+    <article class="tile ${s.status}">
+      <div class="tile-top"><span class="tile-n">${i+1}</span><span class="pill ${s.status}">${esc(s.status_label || STATUS[s.status])}</span></div>
+      <div class="tile-q">${esc(s.short)}</div>
+      <div class="tile-v">${esc(s.id === 'squeeze' ? s.value.replace(' vs ', ' / ') : s.value)}</div>
+      ${s.id === 'capex' ? `<div class="bars"><canvas id="spark-capex"></canvas></div>` : ''}
+      ${s.gauges.map(gaugeHTML).join('')}
+      ${['new_rent','old_rent','breakeven'].includes(s.id) ? `<div class="spark"><canvas id="spark-${s.id}"></canvas></div>` : ''}
+      <div class="tile-rule">${esc(s.rule_short)}</div>
+      <details><summary>details</summary><p>${esc(s.now)}</p><p>${esc(s.why)}</p></details>
+    </article>`).join('');
+  const sp = { spark: true };
+  lineChart('spark-new_rent', [{ label: 'H200/B200', data: avg(['H200','B200']), borderColor: S[0] }], sp);
+  lineChart('spark-old_rent', [{ label: 'H100', data: D.gpu.ocpi['H100 SXM'] || [], borderColor: S[0] }], sp);
+  lineChart('spark-breakeven', [{ label: 'Break-even', data: D.throughput.otpi_open.tokens_per_gpu_hour, borderColor: S[0] }], sp);
   const yoy = capSig.series || [];
-  lineChart('c-capex-yoy', [{ label: 'Capex growth vs a year earlier', data: yoy, borderColor: S[0], pointRadius: 3 }, flatLine(yoy, 0)],
-    { fmt: v => fmtPct(v), tick: v => `${(v*100).toFixed(0)}%`, unit: 'year', tipFmt: 'QQQ yyyy' });
-  const b4 = last(D.capex.big4_total);
-  $('r-capex').innerHTML = b4 ? `Latest quarter <b>$${b4[1].toFixed(0)}B</b>, <b>${fmtPct(last(yoy)[1])}</b> on a year ago. <b>What a turn looked like last time:</b> growth slowed through 2022 (+30% → +20% → +7%) and the watch rule fired at Q4 2022, one quarter before spending fell. It also fired from Q3 2025 to Q1 2026, when growth flattened near +65% and then re-accelerated. A watch means the acceleration stalled, not that a decline is coming.` : '';
+  const qLabel = d => `${d.slice(0,4)} Q${Math.ceil(+d.slice(5,7)/3)}`;
+  const yoyBars = (id, data, spark) => new Chart($(id), {
+    type: 'bar',
+    data: { labels: data.map(p => p[0]), datasets: [{ label: 'Capex growth', data: data.map(p => p[1]), borderRadius: 2,
+      backgroundColor: data.map((p, i) => p[1] < 0 ? css('--turn') : (i > 0 && p[1] < data[i-1][1]) ? css('--watch') : css('--s1')) }] },
+    options: { responsive: true, maintainAspectRatio: false, animation: false,
+      plugins: { legend: { display: false }, tooltip: { enabled: !spark, callbacks: { title: it => qLabel(it[0].label), label: c => fmtPct(c.parsed.y) } } },
+      scales: { x: { display: !spark, grid: { display: false }, ticks: { maxRotation: 0, autoSkip: false, callback: function(v) { const d = this.getLabelForValue(v); return d.slice(5,7) === '03' ? d.slice(0,4) : ''; } } },
+                y: { display: !spark, ticks: { callback: v => `${(v*100).toFixed(0)}%` } } } },
+  });
+  yoyBars('spark-capex', yoy.slice(-12), true);
 
-  // ---- old vs new chip
-  const rs = D.retirement.series;
-  lineChart('c-ret', [{ label: 'H100 cost per unit of work ÷ B200', data: rs, borderColor: S[0] }, flatLine(rs, 1, '_parity')], { fmt: v => v.toFixed(2), unit: 'week' });
-  $('r-ret').innerHTML = rs.length ? `Now <b>${D.retirement.latest.toFixed(2)}</b>. Below the dashed line, the H100 is still the cheaper way to get work done, because B200 rents have risen faster. If it rises above 1.00 and stays there, operators have a price reason to retire H100s.` : '';
-  $('s-perf').innerHTML = `Assumes a B200 does ${D.config.perf['B200']}× the work of an H100. That figure is a placeholder until a published benchmark replaces it, so read the direction, not the level.`;
+  // ---- stack strip
+  const glut = sc.all.find(s => s.key === 'glut'), pw = D.signals.find(s => s.id === 'power');
+  const lanes = [
+    ['sq', 'Squeezed now', cur && cur.squeezed, 'Selling price ▼, rent paid ▲'],
+    ['mx', 'Mixed', ['ai_output_owners'], 'Same price war, but they own chips and collect the rising rent'],
+    ['bn', 'Benefiting', cur && cur.benefits, 'Rising rents and capex'],
+    ...(pw && pw.status === 'turn' ? [['bn', 'Benefiting', ['power'], 'Grids are tight (signal 7)']] : []),
+    ['nx', 'Next, if rents turn', glut.squeezed, 'Debt-financed fleets first'],
+    ['nx', 'Then', glut.next, 'Orders follow capex down'],
+  ].filter(l => l[2] && l[2].length);
+  $('stack').innerHTML = lanes.map(([c, k, keys, note]) => `
+    <div class="lane ${c}"><div><div class="lane-k">${k}</div><div class="lane-g">${keys.map(g => esc(D.companies.groups[g].label)).join(' · ')}</div></div>
+      <div>${chips(keys.flatMap(g => companies(g, D)))}<div class="lane-note">${esc(note)}${keys.map(g => D.companies.groups[g].note ? ' · ' + esc(D.companies.groups[g].note) : '').join('')}</div></div></div>`).join('');
 
-  // ---- term
-  const te = D.term.entries;
-  rows('t-term', [{t:'Logged'},{t:'Contract'},{t:'$/hr', num:true},{t:'Today ÷ contract', num:true}],
-    te.length ? te.map(e => `<tr><td>${esc(e.date)}</td><td>${e.tenor_years}-year</td><td class="num">${money(e.usd_per_gpu_hour)}</td><td class="num">${e.spot_over_term ? e.spot_over_term.toFixed(2)+'×' : '—'}</td></tr>`) : ['<tr><td colspan="4">No entries yet.</td></tr>']);
-  $('r-term').innerHTML = te.length ? `Today's H100 rent is ${money(D.term.spot_h100)}. Only one reported contract is logged (a Tencent–Oracle 5-year lease, chip type unconfirmed), so this is not yet a signal. It becomes one once several dated deals show the premium shrinking or growing.` : '';
-
-  // ---- capex by company
+  // ---- charts
+  lineChart('c-ocpi', GPU_ORDER.filter(g => D.gpu.ocpi[g]).map(g => ({ label: GPU_NAME[g], data: D.gpu.ocpi[g], borderColor: GPU_COLOR[g] })), { fmt: v => `$${v.toFixed(2)}/hr`, tick: v => `$${v}`, unit: 'week', zero: true });
+  rows('t-rent', [{t:'Chip'},{t:'$/hr', num:true},{t:'1 mo', num:true},{t:'3 mo', num:true}],
+    GPU_ORDER.map(g => { const o = last(D.gpu.ocpi[g] || []), c = D.gpu.chg[g] || {};
+      return `<tr><td><span class="sw" style="background:${GPU_COLOR[g]}"></span>${GPU_NAME[g]}</td><td class="num">${o ? money(o[1]) : '—'}</td><td class="num ${cls(c.d30)}">${fmtPct(c.d30)}</td><td class="num ${cls(c.d90)}">${fmtPct(c.d90)}</td></tr>`; }));
+  const oc = D.tokens.otpi_class;
+  lineChart('c-otpi', [{ label: 'Frontier labs', data: oc.closed || [], borderColor: S[0] }, { label: 'Open models', data: oc.open || [], borderColor: S[1] }], { fmt: v => `$${v.toFixed(3)}`, tick: v => `$${v}`, unit: 'week', zero: true });
+  yoyBars('c-capex-yoy', yoy, false);
   const cap = D.capex.by_company;
   new Chart($('c-capex'), {
     type: 'bar',
-    data: { datasets: ['MSFT','GOOGL','AMZN','META'].map((t, i) => ({ label: { MSFT: 'Microsoft', GOOGL: 'Alphabet', AMZN: 'Amazon', META: 'Meta' }[t], data: (cap[t] || []).filter(p => p[0] >= '2023-01-01').map(([x, y]) => ({ x, y })), backgroundColor: S[i], borderColor: css('--bg-card'), borderWidth: 1, borderRadius: 2, stack: 'c' })) },
+    data: { datasets: ['MSFT','GOOGL','AMZN','META'].map((t, i) => ({ label: t, data: (cap[t] || []).filter(p => p[0] >= '2023-01-01').map(([x, y]) => ({ x, y })), backgroundColor: S[i], borderColor: css('--bg-card'), borderWidth: 1, borderRadius: 2, stack: 'c' })) },
     options: { responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, boxHeight: 10 } }, tooltip: { callbacks: { label: c => `${c.dataset.label}: $${c.parsed.y.toFixed(1)}B`, footer: it => `Total $${it.reduce((a, c) => a + c.parsed.y, 0).toFixed(1)}B` } } },
-      scales: { x: { type: 'time', time: { unit: 'quarter', tooltipFormat: 'QQQ yyyy' }, stacked: true, grid: { display: false }, offset: true, ticks: { maxRotation: 0, autoSkipPadding: 12 } }, y: { stacked: true, ticks: { callback: v => `$${v}B` } } } },
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, boxHeight: 10 } }, tooltip: { callbacks: { label: c => `${c.dataset.label}: $${c.parsed.y.toFixed(1)}B`, footer: it => `Total $${it.reduce((a, c) => a + c.parsed.y, 0).toFixed(0)}B` } } },
+      scales: { x: { type: 'time', time: { unit: 'year', tooltipFormat: 'QQQ yyyy' }, stacked: true, grid: { display: false }, offset: true, ticks: { maxRotation: 0 } }, y: { stacked: true, ticks: { callback: v => `$${v}B` } } } },
   });
-  const tics = { MSFT: 'Microsoft', GOOGL: 'Alphabet', AMZN: 'Amazon', META: 'Meta', ORCL: 'Oracle' };
-  const cq = d => `${d.slice(0,4)} Q${Math.ceil(+d.slice(5,7) / 3)}`;
-  const qs = [...new Set(Object.keys(tics).flatMap(t => (cap[t] || []).map(p => cq(p[0]))))].sort().slice(-4);
-  const val = (t, q) => { const p = (cap[t] || []).find(x => cq(x[0]) === q); return p ? p[1] : null; };
-  const yoyCo = t => { const s = cap[t] || []; return s.length < 5 ? null : last(s)[1] / s[s.length-5][1] - 1; };
-  rows('t-capex', [{t:'$ billions'}, ...qs.map(q => ({t: q, num:true})), {t:'vs year ago', num:true}],
-    Object.entries(tics).map(([t, n]) => `<tr><td>${n}</td>${qs.map(q => `<td class="num">${val(t,q) != null ? val(t,q).toFixed(1) : ''}</td>`).join('')}<td class="num ${cls(yoyCo(t))}">${fmtPct(yoyCo(t))}</td></tr>`)
-    .concat((() => { const r = D.capex.revenue.NVDA || []; if (r.length < 5) return []; const g = last(r)[1]/r[r.length-5][1]-1;
-      return [`<tr><td>Nvidia revenue</td><td colspan="${qs.length}">$${last(r)[1].toFixed(0)}B in the quarter to ${last(r)[0]}</td><td class="num ${cls(g)}">${fmtPct(g)}</td></tr>`]; })()));
-
-  // ---- power
-  const dc = D.power.epoch_dc, hist = dc.filter(p => !p[3]), proj = dc.filter((p, i) => p[3] || (dc[i+1] && dc[i+1][3]));
-  lineChart('c-dc', [
-    { label: 'Operating', data: hist.filter(p => p[0] >= '2022').map(p => [p[0], p[1]/1000]), borderColor: S[0], stepped: 'after', tension: 0 },
-    { label: 'Announced', data: proj.map(p => [p[0], p[1]/1000]), borderColor: S[0], borderDash: [5, 4], stepped: 'after', tension: 0 },
-  ], { fmt: v => `${v.toFixed(1)} GW`, tick: v => `${v} GW`, unit: 'year', zero: true, tipFmt: 'MMM yyyy' });
-  const dNow = last(hist), dYr = hist.length > 12 ? hist[hist.length-13] : null, dEnd = last(dc);
-  $('r-dc').innerHTML = dNow ? `<b>${(dNow[1]/1000).toFixed(1)} GW</b> operating now${dYr ? `, up from ${(dYr[1]/1000).toFixed(1)} GW a year ago` : ''}; announced plans reach ${(dEnd[1]/1000).toFixed(0)} GW by ${dEnd[0].slice(0,4)}. One gigawatt is roughly the output of a large nuclear reactor.` : '';
-
-  // ---- grid
-  lineChart('c-load', [{ label: 'PJM', data: ld.PJM || [], borderColor: S[0] }, { label: 'ERCOT', data: ld.ERCOT || [], borderColor: S[1] }, flatLine(ld.PJM || [], 0.03)],
-    { fmt: v => fmtPct(v, 1), tick: v => `${(v*100).toFixed(0)}%`, unit: 'year' });
+  const ri = D.throughput.otpi_open;
+  lineChart('c-req', [{ label: 'Tokens/hr (M)', data: ri.tokens_per_gpu_hour.map(([d, v]) => [d, v / 1e6]), borderColor: S[0] }], { fmt: v => `${v.toFixed(1)}M`, tick: v => `${v}M`, unit: 'week', zero: true });
+  const rs = D.retirement.series;
+  lineChart('c-ret', [{ label: 'H100 ÷ B200 per unit of work', data: rs, borderColor: S[0] }, flatLine(rs, 1)], { fmt: v => v.toFixed(2), unit: 'week' });
+  const ld = D.power.eia_demand_yoy;
+  lineChart('c-load', [{ label: 'PJM', data: ld.PJM || [], borderColor: S[0] }, { label: 'ERCOT', data: ld.ERCOT || [], borderColor: S[1] }, flatLine(ld.PJM || [], 0.03)], { fmt: v => fmtPct(v, 1), tick: v => `${(v*100).toFixed(0)}%`, unit: 'year' });
   const p12 = D.power.eia_price_12m, pst = ['US','VA','OH','TX','GA','AZ'].filter(k => p12[k]);
-  lineChart('c-px', pst.map((k, i) => ({ label: k === 'US' ? 'US average' : k, data: p12[k].filter(p => p[0] >= '2021'), borderColor: S[i], borderWidth: k === 'US' ? 3 : 1.5 })),
-    { fmt: v => fmtPct(v, 1), tick: v => `${(v*100).toFixed(0)}%`, unit: 'year', tipFmt: 'MMM yyyy' });
-  const pw = D.signals.find(s => s.id === 'power');
-  $('r-grid').innerHTML = pw ? `${esc(pw.now)} <b>Why it matters:</b> ${esc(pw.why)}` : '';
-
-  // ---- long view
+  lineChart('c-px', pst.map((k, i) => ({ label: k, data: p12[k].filter(p => p[0] >= '2021'), borderColor: S[i], borderWidth: k === 'US' ? 3 : 1.5 })), { fmt: v => fmtPct(v, 1), tick: v => `${(v*100).toFixed(0)}%`, unit: 'year', tipFmt: 'MMM yyyy' });
+  const dc = D.power.epoch_dc, hist = dc.filter(p => !p[3]), proj = dc.filter((p, i) => p[3] || (dc[i+1] && dc[i+1][3]));
+  lineChart('c-dc', [{ label: 'Operating', data: hist.filter(p => p[0] >= '2022').map(p => [p[0], p[1]/1000]), borderColor: S[0], stepped: 'after', tension: 0 }, { label: 'Announced', data: proj.map(p => [p[0], p[1]/1000]), borderColor: S[0], borderDash: [5, 4], stepped: 'after', tension: 0 }], { fmt: v => `${v.toFixed(1)} GW`, tick: v => `${v}`, unit: 'year', zero: true, tipFmt: 'MMM yyyy' });
   const eb = D.tokens.epoch_backfill, keys = Object.keys(eb).sort();
-  let epochChart;
-  const drawEpoch = k => {
-    epochChart && epochChart.destroy();
-    epochChart = lineChart('c-epoch', [{ label: k, data: eb[k].map(p => [p[0], p[1]]), borderColor: S[0], pointRadius: 3, stepped: 'before', tension: 0 }],
-      { log: true, fmt: v => `$${v} per million`, tick: v => `$${v}`, unit: 'year' });
-    epochChart.options.plugins.tooltip.callbacks.afterLabel = c => eb[k][c.dataIndex][2];
-    epochChart.update();
-  };
+  let ec;
+  const drawEpoch = k => { ec && ec.destroy(); ec = lineChart('c-epoch', [{ label: k, data: eb[k].map(p => [p[0], p[1]]), borderColor: S[0], pointRadius: 3, stepped: 'before', tension: 0 }], { log: true, fmt: v => `$${v}/M tokens`, tick: v => `$${v}`, unit: 'year' }); ec.options.plugins.tooltip.callbacks.afterLabel = c => eb[k][c.dataIndex][2]; ec.update(); };
   const k0 = keys.find(k => k.startsWith('GPQA')) || keys[0];
-  $('epoch-ctl').innerHTML = `<select aria-label="Benchmark">${keys.map(k => `<option value="${esc(k)}"${k === k0 ? ' selected' : ''}>${esc(k.replace('LMSys Chatbot Arena ELO','Arena Elo').replace(' ≥ ', ' at the level of '))}</option>`).join('')}</select>`;
+  $('epoch-ctl').innerHTML = `<select aria-label="Benchmark">${keys.map(k => `<option value="${esc(k)}"${k === k0 ? ' selected' : ''}>${esc(k.replace('LMSys Chatbot Arena ELO','Arena Elo').replace(' ≥ ', ' at '))}</option>`).join('')}</select>`;
   $('epoch-ctl').querySelector('select').onchange = e => drawEpoch(e.target.value);
   if (keys.length) drawEpoch(k0);
+
+  // ---- fine print
+  $('method').innerHTML = `<p>${esc(sc.rule)}</p>` + D.signals.map((s, i) => `<p><b>${i+1}. ${esc(s.title)}</b> ${esc(s.rule)}</p>`).join('');
+  $('roster').innerHTML = Object.keys(D.companies.groups).map(k => `<p><b>${esc(D.companies.groups[k].label)}</b></p>` + companies(k, D).map(c => `<p>${esc(c.name)} (${c.ticker ? esc(c.ticker) : 'private'}): ${esc(c.why)}</p>`).join('')).join('');
+  rows('t-status', [{t:'Source'},{t:'State'},{t:'Updated'}], D.status.map(s => `<tr><td>${esc(s.label)}</td><td>${s.state === 'ok' && !s.stale ? '<span class="ok">● current</span>' : s.state === 'skipped' ? '<span class="skip">○ off</span>' : '<span class="err">● stale</span>'}</td><td class="num">${s.last_success ? s.last_success.slice(0,10) : '—'}</td></tr>`));
 }
 
-fetch('data.json', { cache: 'no-store' }).then(r => r.json()).then(render).catch(e => {
-  $('status-line').innerHTML = `<span class="stale">failed to load data: ${esc(e.message)}</span>`;
-  console.error(e);
-});
+fetch('data.json', { cache: 'no-store' }).then(r => r.json()).then(render).catch(e => { $('status-line').innerHTML = `<span class="stale">failed to load data: ${esc(e.message)}</span>`; console.error(e); });
 </script>
 </body>
 </html>
