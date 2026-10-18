@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9085e9"/>
+      <stop offset="1" stop-color="#3987e5"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <!-- chip pins -->
+  <g stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity="0.85">
+    <path d="M24 10v6M32 10v6M40 10v6M24 48v6M32 48v6M40 48v6M10 24h6M10 32h6M10 40h6M48 24h6M48 32h6M48 40h6"/>
+  </g>
+  <!-- chip body -->
+  <rect x="16" y="16" width="32" height="32" rx="5" fill="#0d1117"/>
+  <!-- price line -->
+  <path d="M21 39 L27 33 L32 36 L38 26 L43 29" fill="none" stroke="#eab308" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="43" cy="29" r="2.6" fill="#eab308"/>
+</svg>
