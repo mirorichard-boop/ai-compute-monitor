@@ -1,0 +1,37 @@
+# Hardware constants used by derived metrics. Every number needs a source; replace the
+# placeholders with published figures (SemiAnalysis InferenceX, MLPerf Inference) as you find them.
+
+# Inference work per GPU relative to H100 SXM = 1.0. Used by the H100 retirement signal:
+#   signal = (h100_rent / b200_rent) * b200_perf
+#   > 1.0 means an H100 costs more per unit of work than a B200 -> displacement underway.
+relative_inference_perf:
+  A100 SXM4: 0.35
+  H100 SXM: 1.0
+  H200: 1.5
+  B200: 2.5
+perf_source: >
+  PLACEHOLDER, not sourced. Rough midpoint of NVIDIA and MLPerf Inference v5.x Llama-2-70B
+  per-GPU results (B200 ~2.5-3x H100; H200 ~1.4-1.6x). Replace with InferenceX numbers at a
+  fixed latency target before trusting the retirement signal.
+
+# All-in facility power per GPU in kW (GPU TDP x server overhead x PUE). Used for rent per kW.
+kw_per_gpu:
+  A100 SXM4: 0.75
+  H100 SXM: 1.4
+  H200: 1.45
+  B200: 2.1
+kw_source: >
+  PLACEHOLDER estimate: TDP (A100 400W, H100 700W, H200 700W, B200 1000W) x ~1.6 server
+  overhead (CPU, NIC, fans, storage per GPU) x 1.3 PUE. Replace with a sourced figure.
+
+# Published per-GPU serving throughput anchors, compared quarterly against the
+# required-throughput index. Tokens per GPU-hour at a stated latency target. Add rows as
+# benchmarks are published. Do not derive from OpenRouter/AA tokens-per-second (per-request,
+# not per-GPU; batching decides the per-GPU number).
+efficiency_anchors: []
+#  - date: 2026-10-01
+#    hardware: B200
+#    model: gpt-oss-120b
+#    tokens_per_gpu_hour: 0
+#    latency_target: "e.g. 50 tok/s/user"
+#    source: "SemiAnalysis InferenceX, <url>"

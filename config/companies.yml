@@ -1,0 +1,77 @@
+# Named companies for each part of the AI stack, with the reason each is exposed.
+# Edit as the landscape changes. ticker: null = private. Named from public reporting through
+# 2026; check current filings before relying on any single name.
+#
+# The "ai_output_owners" group is also filled automatically each day from OpenRouter: every listed
+# company currently selling the tracked open models by the token. `public_providers` maps those provider
+# names to tickers (only listed companies).
+
+groups:
+  token_renters:
+    label: Rent chips, sell AI output
+    squeezed_when: AI prices fall faster than chip rents
+    note: "No public pure-play. Public exposure runs through stakes: Microsoft in OpenAI; Amazon and Alphabet in Anthropic."
+    companies:
+      - {name: OpenAI, ticker: null, why: "Rents most of its compute from Microsoft, Oracle and CoreWeave, and cut prices sharply. Microsoft holds a large stake."}
+      - {name: Anthropic, ticker: null, why: "Rents its compute from Amazon and Google, both investors."}
+      - {name: Together AI, ticker: null, why: "Sells open-model output, largely on rented cloud GPUs."}
+      - {name: Fireworks AI, ticker: null, why: "Sells open-model output on rented cloud GPUs."}
+      - {name: Baseten, ticker: null, why: "Sells open-model output across rented capacity from several clouds."}
+
+  ai_output_owners:
+    label: Own chips, also sell AI output
+    squeezed_when: "AI prices keep falling: a price war in this product line, offset while their chips rent out at rising rates"
+    companies:
+      - {name: DigitalOcean, ticker: DOCN, why: "Sells open-model inference on its own GPU fleet."}
+
+  gpu_landlords:
+    label: GPU landlords (neoclouds)
+    squeezed_when: chip rents fall, especially on older H100 fleets
+    companies:
+      - {name: CoreWeave, ticker: CRWV, why: "Largest neocloud; GPU fleet financed largely with debt secured by the chips and customer contracts."}
+      - {name: Nebius, ticker: NBIS, why: "Rents GPUs and sells inference; funded partly with convertible debt."}
+      - {name: IREN, ticker: IREN, why: "Former bitcoin miner renting out owned GPU fleets."}
+      - {name: Oracle, ticker: ORCL, why: "Borrowing heavily to build AI capacity leased to OpenAI and others."}
+      - {name: Lambda, ticker: null, why: "GPU cloud that has used GPU-backed loans."}
+      - {name: Crusoe, ticker: null, why: "GPU cloud and data center developer."}
+
+  chipmakers:
+    label: Chipmakers and memory
+    squeezed_when: Big Tech capex growth slows, then falls
+    companies:
+      - {name: Nvidia, ticker: NVDA, why: "Most AI accelerator revenue; orders track hyperscaler capex."}
+      - {name: AMD, ticker: AMD, why: "Second-source AI accelerators."}
+      - {name: Broadcom, ticker: AVGO, why: "Custom AI chips for Google, Meta and others."}
+      - {name: TSMC, ticker: TSM, why: "Makes nearly all leading AI chips; CoWoS packaging capacity."}
+      - {name: Micron, ticker: MU, why: "HBM memory on every AI accelerator."}
+      - {name: SK Hynix, ticker: "000660.KS", why: "Largest HBM supplier."}
+
+  hyperscalers:
+    label: Hyperscalers
+    squeezed_when: chip rents fall while their own capex is still rising
+    companies:
+      - {name: Microsoft, ticker: MSFT, why: "Capex plus OpenAI exposure."}
+      - {name: Alphabet, ticker: GOOGL, why: "Capex; sells both AI output and cloud capacity."}
+      - {name: Amazon, ticker: AMZN, why: "Capex; AWS rents chips and sells models (Bedrock)."}
+      - {name: Meta, ticker: META, why: "Capex for its own models; little cloud revenue to offset it."}
+
+  power:
+    label: Power and grid
+    benefits_when: grids are tight and construction continues
+    companies:
+      - {name: Constellation Energy, ticker: CEG, why: "Largest nuclear fleet; PJM generation sold to data centers."}
+      - {name: Vistra, ticker: VST, why: "Generation in ERCOT and PJM."}
+      - {name: Talen Energy, ticker: TLN, why: "PJM nuclear and gas generation contracted to data centers."}
+      - {name: GE Vernova, ticker: GEV, why: "Gas turbines and grid equipment for new generation."}
+      - {name: Dominion Energy, ticker: D, why: "Utility for Northern Virginia, the largest data center market."}
+      - {name: American Electric Power, ticker: AEP, why: "Utility for Ohio, where industrial power prices rose most."}
+
+# OpenRouter provider name -> ticker, for listed companies only.
+public_providers:
+  Google: GOOGL
+  Amazon Bedrock: AMZN
+  CoreWeave: CRWV
+  Nebius: NBIS
+  DigitalOcean: DOCN
+  Cloudflare: NET
+  Baidu: BIDU

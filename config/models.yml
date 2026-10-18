@@ -1,0 +1,45 @@
+# Token-price tracking. Edit freely; the next daily run picks it up.
+
+# Input:output token weighting for the blended price (3 = three input tokens per output token).
+blend_input_to_output: 3
+
+# Reference open-weights model for the squeeze index. Same weights everywhere, so the
+# per-provider median price is a true constant-quality series. Chosen 2026-10-18 because it
+# had the most OpenRouter providers (24) of any open model checked:
+#   gpt-oss-120b 24 | deepseek-v3.2 12 | llama-3.3-70b 11 | qwen3-235b-2507 7
+reference_model: openai/gpt-oss-120b
+
+# Extra open-weights models whose per-provider prices are snapshotted daily (cross-check on
+# the reference choice; any of these can become the reference later with history intact).
+endpoint_models:
+  - openai/gpt-oss-120b
+  - meta-llama/llama-3.3-70b-instruct
+  - deepseek/deepseek-v3.2
+  - qwen/qwen3-235b-a22b-2507
+
+# Fixed tier baskets (OpenRouter list prices). Tier index = median blended price of the
+# models present that day. A fixed basket only moves on list-price changes; the
+# constant-quality decline from new models shows up in the Epoch backfill and Ornn OTPI.
+# When AA_API_KEY is set, the Artificial Analysis collector adds a threshold-based
+# "cheapest model at or above this Intelligence Index" series per tier.
+tiers:
+  frontier:
+    models:
+      - anthropic/claude-opus-5.5
+      - openai/gpt-6.1-sol-pro
+      - google/gemini-4-argon
+    aa_min_intelligence: 70
+  mid:
+    models:
+      - anthropic/claude-sonnet-5.5
+      - openai/gpt-6.1-sol
+      - mistralai/mistral-large-4-0
+      - deepseek/deepseek-v3.2
+    aa_min_intelligence: 55
+  small:
+    models:
+      - anthropic/claude-haiku-5.5
+      - openai/gpt-oss-120b
+      - meta-llama/llama-3.3-70b-instruct
+      - qwen/qwen3-235b-a22b-2507
+    aa_min_intelligence: 40

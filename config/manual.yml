@@ -1,0 +1,45 @@
+# Manual inputs, updated when earnings or reports land. Every entry carries a source.
+# Empty lists render as "no entries yet" on the page; nothing here is invented.
+
+# GPU rental contract prices by tenor (USD per GPU-hour). Spot comes from Ornn daily;
+# these are the 1y / 3y / 5y points. Term structure = spot / tenor rate.
+term_curve:
+  - date: 2026-10-18
+    gpu: unspecified
+    tenor_years: 5
+    usd_per_gpu_hour: 1.60
+    source: "Reported Tencent-Oracle five-year lease, cited in the dashboard spec. Date is when it was recorded, not the deal date; chip type unconfirmed. Verify."
+#  - date: YYYY-MM-DD
+#    gpu: H100 SXM
+#    tenor_years: 1
+#    usd_per_gpu_hour: 0.00
+#    source: ""
+
+# Hyperscaler forward capex guidance (USD billions, fiscal or calendar year as stated).
+capex_guidance: []
+#  - date: 2026-10-29
+#    company: MSFT
+#    period: FY2027
+#    low_bn: 0
+#    high_bn: 0
+#    source: ""
+
+# TSMC CoWoS capacity estimates (wafers per month).
+cowos_capacity: []
+#  - date: 2026-10-01
+#    period: end-2026
+#    wafers_per_month: 0
+#    source: ""
+
+# HBM supply commentary.
+hbm_supply: []
+#  - date: 2026-10-01
+#    note: ""
+#    source: ""
+
+# Power: capacity auction prices and interconnection queue length (no machine feed found).
+power_manual: []
+#  - date: 2026-07-22
+#    metric: PJM BRA clearing price (USD/MW-day)
+#    value: 0
+#    source: ""
