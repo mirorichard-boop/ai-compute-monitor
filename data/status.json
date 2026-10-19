@@ -1,49 +1,49 @@
 {
   "artificial_analysis": {
     "error": "AA_API_KEY not set",
-    "last_attempt": "2026-10-18T15:17:48+00:00",
+    "last_attempt": "2026-10-19T19:44:43+00:00",
     "state": "skipped"
   },
   "edgar": {
     "error": null,
-    "last_attempt": "2026-10-18T15:15:39+00:00",
-    "last_success": "2026-10-18T15:15:39+00:00",
+    "last_attempt": "2026-10-19T19:43:24+00:00",
+    "last_success": "2026-10-19T19:43:24+00:00",
     "note": "MSFT capex 2026-06-30 $35.8B; GOOGL capex 2026-06-30 $44.9B; AMZN capex 2026-06-30 $54.2B; META capex 2026-06-30 $30.1B; ORCL capex 2026-08-31 $28.5B; NVDA revenue 2026-07-26 $96.2B",
     "state": "ok"
   },
   "eia": {
     "error": null,
-    "last_attempt": "2026-10-18T15:15:42+00:00",
-    "last_success": "2026-10-18T15:15:42+00:00",
-    "note": "618 retail-price rows, 5693 demand rows",
+    "last_attempt": "2026-10-19T19:43:26+00:00",
+    "last_success": "2026-10-19T19:43:26+00:00",
+    "note": "618 retail-price rows, 5695 demand rows",
     "state": "ok"
   },
   "epoch": {
     "error": null,
-    "last_attempt": "2026-10-18T15:15:39+00:00",
-    "last_success": "2026-10-18T15:15:39+00:00",
+    "last_attempt": "2026-10-19T19:43:23+00:00",
+    "last_success": "2026-10-19T19:43:23+00:00",
     "note": "119 price-backfill rows through 2025-02-05; 94 data centers, 49,332 MW tracked at 2030-01",
     "state": "ok"
   },
   "openrouter": {
     "error": null,
-    "last_attempt": "2026-10-18T15:15:36+00:00",
-    "last_success": "2026-10-18T15:15:36+00:00",
+    "last_attempt": "2026-10-19T19:43:22+00:00",
+    "last_success": "2026-10-19T19:43:22+00:00",
     "note": "11 models, 53 endpoints; reference has 24 providers, median output $0.50/Mtok",
     "state": "ok"
   },
   "ornn": {
     "error": null,
-    "last_attempt": "2026-10-18T15:15:36+00:00",
-    "last_success": "2026-10-18T15:15:36+00:00",
-    "note": "OCPI 368 rows through 2026-10-17 (H100 $2.78); OTPI 352 lab rows, 176 class rows",
+    "last_attempt": "2026-10-19T19:43:22+00:00",
+    "last_success": "2026-10-19T19:43:22+00:00",
+    "note": "OCPI 368 rows through 2026-10-18 (H100 $2.81); OTPI 352 lab rows, 176 class rows",
     "state": "ok"
   },
   "vast": {
     "error": null,
-    "last_attempt": "2026-10-18T15:15:37+00:00",
-    "last_success": "2026-10-18T15:15:37+00:00",
-    "note": "A100 SXM4 n=23 med $0.91; H100 SXM n=8 med $3.43; H200 n=1 med $5.00; B200 n=9 med $9.00",
+    "last_attempt": "2026-10-19T19:43:23+00:00",
+    "last_success": "2026-10-19T19:43:23+00:00",
+    "note": "A100 SXM4 n=19 med $0.84; H100 SXM n=3 med $3.95; H200 n=4 med $4.34; B200 n=2 med $9.13",
     "state": "ok"
   }
 }
