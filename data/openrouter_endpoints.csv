@@ -263,3 +263,55 @@ date,model,endpoint,provider,quantization,prompt,completion
 2026-10-22,qwen/qwen3-235b-a22b-2507,google-vertex/us-south1,Google,unknown,2.2e-07,8.8e-07
 2026-10-22,qwen/qwen3-235b-a22b-2507,parasail/fp8,Parasail,fp8,1.4e-07,8e-07
 2026-10-22,qwen/qwen3-235b-a22b-2507,venice/fp8,Venice,fp8,1.5e-07,7.5e-07
+2026-10-23,deepseek/deepseek-v3.2,atlas-cloud/fp8,AtlasCloud,fp8,2.6e-07,3.8e-07
+2026-10-23,deepseek/deepseek-v3.2,baidu/fp8,Baidu,fp8,2.8e-07,4.2e-07
+2026-10-23,deepseek/deepseek-v3.2,deepinfra/fp4,DeepInfra,fp4,2.6e-07,3.8e-07
+2026-10-23,deepseek/deepseek-v3.2,digitalocean,DigitalOcean,unknown,3e-07,9.6e-07
+2026-10-23,deepseek/deepseek-v3.2,friendli,Friendli,unknown,5e-07,1.5e-06
+2026-10-23,deepseek/deepseek-v3.2,gmicloud/fp8,GMICloud,fp8,2.088e-07,3.096e-07
+2026-10-23,deepseek/deepseek-v3.2,google-vertex,Google,unknown,5.6e-07,1.68e-06
+2026-10-23,deepseek/deepseek-v3.2,mara,Mara,unknown,3e-06,4.5e-06
+2026-10-23,deepseek/deepseek-v3.2,phala,Phala,unknown,1e-06,1e-06
+2026-10-23,deepseek/deepseek-v3.2,sambanova,SambaNova,unknown,3e-06,4.5e-06
+2026-10-23,deepseek/deepseek-v3.2,siliconflow/fp8,SiliconFlow,fp8,2.59e-07,8e-07
+2026-10-23,deepseek/deepseek-v3.2,venice,Venice,unknown,2.6829e-07,3.9024e-07
+2026-10-23,meta-llama/llama-3.3-70b-instruct,akashml/fp8,AkashML,fp8,2e-07,5.2e-07
+2026-10-23,meta-llama/llama-3.3-70b-instruct,cloudflare/fp8,Cloudflare,fp8,2.93e-07,2.253e-06
+2026-10-23,meta-llama/llama-3.3-70b-instruct,coreweave/fp16,CoreWeave,fp16,7.1e-07,7.1e-07
+2026-10-23,meta-llama/llama-3.3-70b-instruct,deepinfra/turbo,DeepInfra,fp8,1e-07,3.2e-07
+2026-10-23,meta-llama/llama-3.3-70b-instruct,google-vertex,Google,unknown,7.2e-07,7.2e-07
+2026-10-23,meta-llama/llama-3.3-70b-instruct,google-vertex/us-central1,Google,unknown,7.2e-07,7.2e-07
+2026-10-23,meta-llama/llama-3.3-70b-instruct,groq,Groq,unknown,5.9e-07,7.9e-07
+2026-10-23,meta-llama/llama-3.3-70b-instruct,novita/bf16,Novita,bf16,1.35e-07,4e-07
+2026-10-23,meta-llama/llama-3.3-70b-instruct,parasail/fp8,Parasail,fp8,2.2e-07,5e-07
+2026-10-23,meta-llama/llama-3.3-70b-instruct,sambanova-turbo,SambaNova,unknown,4.5e-07,9e-07
+2026-10-23,meta-llama/llama-3.3-70b-instruct,together,Together,unknown,1.04e-06,1.04e-06
+2026-10-23,openai/gpt-oss-120b,akashml/bf16,AkashML,bf16,3e-08,1.87e-07
+2026-10-23,openai/gpt-oss-120b,amazon-bedrock,Amazon Bedrock,unknown,1.5e-07,6e-07
+2026-10-23,openai/gpt-oss-120b,amazon-bedrock/eu-west-1,Amazon Bedrock,unknown,1.5e-07,6e-07
+2026-10-23,openai/gpt-oss-120b,baseten/fp4,BaseTen,fp4,1e-07,5e-07
+2026-10-23,openai/gpt-oss-120b,baseten/fp4/us,BaseTen,fp4,1e-07,5e-07
+2026-10-23,openai/gpt-oss-120b,cerebras/fp16,Cerebras,fp16,3.5e-07,7.5e-07
+2026-10-23,openai/gpt-oss-120b,coreweave/fp4,CoreWeave,fp4,3e-08,1.7e-07
+2026-10-23,openai/gpt-oss-120b,crusoe/bf16,Crusoe,bf16,5e-08,2.5e-07
+2026-10-23,openai/gpt-oss-120b,deepinfra/bf16,DeepInfra,bf16,3.7e-08,1.7e-07
+2026-10-23,openai/gpt-oss-120b,dekallm/bf16,DekaLLM,bf16,3e-08,1.8e-07
+2026-10-23,openai/gpt-oss-120b,digitalocean,DigitalOcean,unknown,6e-08,4.2e-07
+2026-10-23,openai/gpt-oss-120b,google-vertex/global,Google,unknown,9e-08,3.6e-07
+2026-10-23,openai/gpt-oss-120b,groq,Groq,unknown,1.5e-07,6e-07
+2026-10-23,openai/gpt-oss-120b,mancer/fp8,Mancer 2,fp8,5e-08,2.5e-07
+2026-10-23,openai/gpt-oss-120b,mara,Mara,unknown,1.5e-07,7.5e-07
+2026-10-23,openai/gpt-oss-120b,near-ai/fp4,Near AI,fp4,3e-08,1.5e-07
+2026-10-23,openai/gpt-oss-120b,nebius/fp4,Nebius,fp4,1.5e-07,6e-07
+2026-10-23,openai/gpt-oss-120b,novita/fp4,Novita,fp4,5e-08,2.5e-07
+2026-10-23,openai/gpt-oss-120b,parasail/fp4,Parasail,fp4,1e-07,7.5e-07
+2026-10-23,openai/gpt-oss-120b,phala,Phala,unknown,1.5e-07,6e-07
+2026-10-23,openai/gpt-oss-120b,sambanova,SambaNova,unknown,1.4e-07,9.5e-07
+2026-10-23,openai/gpt-oss-120b,siliconflow/fp8,SiliconFlow,fp8,1.5e-07,6e-07
+2026-10-23,openai/gpt-oss-120b,together,Together,unknown,1.5e-07,6e-07
+2026-10-23,openai/gpt-oss-120b,venice/int4,Venice,int4,3e-08,1.5e-07
+2026-10-23,qwen/qwen3-235b-a22b-2507,deepinfra/fp8,DeepInfra,fp8,9e-08,5.5e-07
+2026-10-23,qwen/qwen3-235b-a22b-2507,gmicloud/fp8,GMICloud,fp8,8.75e-08,3.5e-07
+2026-10-23,qwen/qwen3-235b-a22b-2507,google-vertex/us-south1,Google,unknown,2.2e-07,8.8e-07
+2026-10-23,qwen/qwen3-235b-a22b-2507,parasail/fp8,Parasail,fp8,1.4e-07,8e-07
+2026-10-23,qwen/qwen3-235b-a22b-2507,venice/fp8,Venice,fp8,1.5e-07,7.5e-07
