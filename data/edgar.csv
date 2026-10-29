@@ -43,6 +43,7 @@ GOOGL,capex,2025-07-01,2025-09-30,23953000000,PaymentsToAcquirePropertyPlantAndE
 GOOGL,capex,2025-10-01,2025-12-31,27851000000,PaymentsToAcquirePropertyPlantAndEquipment
 GOOGL,capex,2026-01-01,2026-03-31,35674000000,PaymentsToAcquirePropertyPlantAndEquipment
 GOOGL,capex,2026-04-01,2026-06-30,44924000000,PaymentsToAcquirePropertyPlantAndEquipment
+GOOGL,capex,2026-07-01,2026-09-30,51355000000,PaymentsToAcquirePropertyPlantAndEquipment
 META,capex,2021-01-01,2021-03-31,4303000000,PaymentsToAcquirePropertyPlantAndEquipment
 META,capex,2021-04-01,2021-06-30,4641000000,PaymentsToAcquirePropertyPlantAndEquipment
 META,capex,2021-07-01,2021-09-30,4346000000,PaymentsToAcquirePropertyPlantAndEquipment
@@ -88,6 +89,7 @@ MSFT,capex,2025-07-01,2025-09-30,19394000000,PaymentsToAcquirePropertyPlantAndEq
 MSFT,capex,2025-10-01,2025-12-31,29876000000,PaymentsToAcquirePropertyPlantAndEquipment
 MSFT,capex,2026-01-01,2026-03-31,30876000000,PaymentsToAcquirePropertyPlantAndEquipment
 MSFT,capex,2026-04-01,2026-06-30,35802000000,PaymentsToAcquirePropertyPlantAndEquipment
+MSFT,capex,2026-07-01,2026-09-30,39367000000,PaymentsToAcquirePropertyPlantAndEquipment
 NVDA,revenue,2020-10-26,2021-01-31,5003000000,Revenues
 NVDA,revenue,2021-02-01,2021-05-02,5661000000,Revenues
 NVDA,revenue,2021-05-03,2021-08-01,6507000000,Revenues
