@@ -164,3 +164,14 @@ date,model,prompt,completion,cache_read
 2026-11-01,openai/gpt-6.1-sol-pro,2e-06,1e-05,1e-07
 2026-11-01,openai/gpt-oss-120b,1.4e-08,5.1e-08,
 2026-11-01,qwen/qwen3-235b-a22b-2507,9e-08,5.5e-07,
+2026-11-02,anthropic/claude-haiku-5.5,1e-07,5e-07,1e-08
+2026-11-02,anthropic/claude-opus-5.5,4e-06,2e-05,2e-07
+2026-11-02,anthropic/claude-sonnet-5.5,2e-06,1e-05,1e-07
+2026-11-02,deepseek/deepseek-v3.2,2.6e-07,3.8e-07,1.3e-07
+2026-11-02,google/gemini-4-argon,2e-06,1e-05,1e-07
+2026-11-02,meta-llama/llama-3.3-70b-instruct,1e-07,3.2e-07,
+2026-11-02,mistralai/mistral-large-4-0,7e-07,2.1e-06,7e-08
+2026-11-02,openai/gpt-6.1-sol,2e-06,1e-05,1e-07
+2026-11-02,openai/gpt-6.1-sol-pro,2e-06,1e-05,1e-07
+2026-11-02,openai/gpt-oss-120b,2.8e-08,1.05e-07,2.6e-08
+2026-11-02,qwen/qwen3-235b-a22b-2507,9e-08,5.5e-07,
