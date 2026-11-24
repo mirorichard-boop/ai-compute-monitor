@@ -1724,7 +1724,7 @@ date,model,endpoint,provider,quantization,prompt,completion
 2026-11-24,openai/gpt-oss-120b,nebius/fp4,Nebius,fp4,1.5e-07,6e-07
 2026-11-24,openai/gpt-oss-120b,parasail/fast,Parasail,fp4,1.5e-07,7.5e-07
 2026-11-24,openai/gpt-oss-120b,parasail/fp4,Parasail,fp4,1e-07,7.5e-07
-2026-11-24,openai/gpt-oss-120b,primeintellect/fp4,PrimeIntellect,fp4,3.13e-07,6.71e-07
+2026-11-24,openai/gpt-oss-120b,primeintellect/fp4,PrimeIntellect,fp4,3.5e-07,7.5e-07
 2026-11-24,openai/gpt-oss-120b,sambanova,SambaNova,unknown,1.4e-07,9.5e-07
 2026-11-24,openai/gpt-oss-120b,siliconflow/fp8,SiliconFlow,fp8,1.5e-07,6e-07
 2026-11-24,openai/gpt-oss-120b,together,Together,unknown,1.5e-07,6e-07
