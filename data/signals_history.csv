@@ -272,3 +272,10 @@ date,id,status,progress
 2026-11-26,power,turn,1.25
 2026-11-26,squeeze,watch,1.25
 2026-11-26,term,pending,
+2026-11-27,breakeven,watch,1.25
+2026-11-27,capex,steady,0.0
+2026-11-27,new_rent,steady,0.0
+2026-11-27,old_rent,steady,0.5188
+2026-11-27,power,turn,1.25
+2026-11-27,squeeze,watch,1.25
+2026-11-27,term,pending,
